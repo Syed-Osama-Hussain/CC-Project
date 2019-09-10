@@ -1,0 +1,17 @@
+* MDM
+/ MDM
+% MDM
+! not
+++ inc_dec
+-- inc_dec
++ PM
+- PM
+&& &&
+|| ||
+< ROP
+> ROP
+<= ROP
+>= ROP
+!= ROP
+== ROP
+= =
