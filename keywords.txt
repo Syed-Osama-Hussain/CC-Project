@@ -21,3 +21,4 @@ return return
 exit exit
 loop loop
 function function
+new new

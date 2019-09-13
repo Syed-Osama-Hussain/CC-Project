@@ -9,19 +9,18 @@ using namespace std;
 
 class LexicalAnalyzer
 {
-  public:
+public:
   LexicalAnalyzer()
   {
   }
 
   void addLexeme(Lexeme &lex)
   {
-    lexemes.push_back(lex);
+    this->lexemes.push_back(lex);
   }
 
   void breakWords(string filename)
   {
-
     string word = "";
     std::ifstream file(filename, std::ios::in);
     if (file)
@@ -29,9 +28,8 @@ class LexicalAnalyzer
       while (!file.eof())
         word.push_back(file.get());
     }
+    file.close();
 
-    //Words this->words;
-    //string word = "hello'how\\\\'++b.35 hi";
     string temp = "";
     int counter = 0;
     int line_no = 0;
@@ -45,7 +43,7 @@ class LexicalAnalyzer
         {
           if (temp != "")
           {
-            breakTemp(temp, line_no);
+            this->classifyWord(temp, line_no);
             temp = "";
           }
 
@@ -62,11 +60,11 @@ class LexicalAnalyzer
         {
           if (temp != "")
           {
-            breakTemp(temp, line_no);
+            this->classifyWord(temp, line_no);
             temp = "";
           }
 
-          while (word[i] != '13' && i < word.length())
+          while (word[i] != '\n' && i < word.length())
             i++;
 
           line_no++;
@@ -80,7 +78,7 @@ class LexicalAnalyzer
 
         if (word[i] == '\"' || word[i] == '\'')
         {
-          breakTemp(temp, line_no);
+          this->classifyWord(temp, line_no);
           temp = "";
           temp.push_back(word[i]);
           continue;
@@ -91,7 +89,7 @@ class LexicalAnalyzer
           temp.push_back(word[i]);
           temp.push_back(word[i + 1]);
           i++;
-          breakTemp(temp, line_no);
+          this->classifyWord(temp, line_no);
           temp = "";
           continue;
         }
@@ -101,7 +99,7 @@ class LexicalAnalyzer
           temp.push_back(word[i]);
           temp.push_back(word[i + 1]);
           i++;
-          breakTemp(temp, line_no);
+          this->classifyWord(temp, line_no);
           temp = "";
           continue;
         }
@@ -110,7 +108,7 @@ class LexicalAnalyzer
         if (this->words.findOperator(s) != "Not present")
         {
           temp.push_back(word[i]);
-          breakTemp(temp, line_no);
+          this->classifyWord(temp, line_no);
           temp = "";
           continue;
         }
@@ -134,14 +132,14 @@ class LexicalAnalyzer
                 search = "";
                 search.push_back(word[i]);
               }
-              breakTemp(temp, line_no);
+              this->classifyWord(temp, line_no);
               temp = "";
               continue;
             }
 
             if (isInt(search))
             {
-              breakTemp(temp, line_no);
+              this->classifyWord(temp, line_no);
               temp = "";
               temp.push_back(word[i]);
               i++;
@@ -155,7 +153,7 @@ class LexicalAnalyzer
                 search = "";
                 search.push_back(word[i]);
               }
-              breakTemp(temp, line_no);
+              this->classifyWord(temp, line_no);
               temp = "";
               continue;
             }
@@ -163,7 +161,7 @@ class LexicalAnalyzer
             {
 
               temp.push_back(word[i]);
-              breakTemp(temp, line_no);
+              this->classifyWord(temp, line_no);
               temp = "";
               continue;
             }
@@ -172,7 +170,7 @@ class LexicalAnalyzer
           {
 
             temp.push_back(word[i]);
-            breakTemp(temp, line_no);
+            this->classifyWord(temp, line_no);
             temp = "";
             continue;
           }
@@ -182,7 +180,7 @@ class LexicalAnalyzer
       if (word[i] == '\n')
       {
         temp.push_back(word[i]);
-        breakTemp(temp, line_no);
+        this->classifyWord(temp, line_no);
         temp = "";
         line_no++;
         continue;
@@ -193,26 +191,202 @@ class LexicalAnalyzer
       if ((word[i] == '\"' && temp[0] == '\"') || ((word[i] == '\'' && temp[0] == '\'')) && slashEven(temp))
       {
         temp.push_back(word[i]);
-        breakTemp(temp, line_no);
+        this->classifyWord(temp, line_no);
         temp = "";
         continue;
       }
 
       temp.push_back(word[i]);
     }
-    breakTemp(temp, line_no);
+    temp.pop_back();
+    this->classifyWord(temp, line_no);
   }
 
-  void breakTemp(string temp, int line_no)
+  void classifyWord(string value, int line_no)
   {
-    cout << "Word " << temp << " at line" << line_no << endl;
+    Lexeme Lex;
+    int type = wordType(value[0]);
+    switch (type)
+    {
+    case 1:
+      if (isIdentifier(value))
+      {
+        Lex.setLexeme(line_no, "ID", value);
+        this->addLexeme(Lex);
+      }
+      else
+      {
+        Lex.setLexeme(line_no, "Invalid Lexeme", value);
+        this->addLexeme(Lex);
+      }
+      break;
+
+    case 2:
+      if (isIdentifier(value))
+      {
+        string classPart = this->words.findKeyword(value);
+        if (classPart != "Not present")
+        {
+          Lex.setLexeme(line_no, classPart, value);
+          this->addLexeme(Lex);
+        }
+        else
+        {
+          Lex.setLexeme(line_no, "ID", value);
+          this->addLexeme(Lex);
+        }
+      }
+      else
+      {
+        Lex.setLexeme(line_no, "Invalid Lexeme", value);
+        this->addLexeme(Lex);
+      }
+      break;
+
+    case 3:
+      if (value == ".")
+      {
+        Lex.setLexeme(line_no, ".", value);
+        this->addLexeme(Lex);
+        break;
+      }
+
+      if (isInt(value))
+      {
+        Lex.setLexeme(line_no, "IntConst", value);
+        this->addLexeme(Lex);
+        break;
+      }
+
+      if (isFloat(value))
+      {
+        Lex.setLexeme(line_no, "FloatConst", value);
+        this->addLexeme(Lex);
+        break;
+      }
+      Lex.setLexeme(line_no, "Invalid Lexeme", value);
+      this->addLexeme(Lex);
+      break;
+
+    case 4:
+      if (isChar(value))
+      {
+        Lex.setLexeme(line_no, "CharConst", value);
+        this->addLexeme(Lex);
+      }
+      else
+      {
+        Lex.setLexeme(line_no, "Invalid Lexeme", value);
+        this->addLexeme(Lex);
+      }
+      break;
+
+    case 5:
+      if (isString(value))
+      {
+        Lex.setLexeme(line_no, "StringConst", value);
+        this->addLexeme(Lex);
+      }
+      else
+      {
+        Lex.setLexeme(line_no, "Invalid Lexeme", value);
+        this->addLexeme(Lex);
+      }
+      break;
+
+    default:
+
+      if (value == "\n")
+      {
+        Lex.setLexeme(line_no, "Terminator", value);
+        this->addLexeme(Lex);
+        break;
+      }
+
+      string classPart = this->words.findOperator(value);
+
+      if (classPart != "Not present")
+      {
+        Lex.setLexeme(line_no, classPart, value);
+        this->addLexeme(Lex);
+        break;
+      }
+      classPart = this->words.findPunctuator(value);
+
+      if (classPart != "Not present")
+      {
+        Lex.setLexeme(line_no, classPart, value);
+        this->addLexeme(Lex);
+        break;
+      }
+
+      Lex.setLexeme(line_no, "Invalid Lexeme", value);
+      this->addLexeme(Lex);
+      break;
+    }
+    //cout << "Word " << value << " at line" << line_no << endl;
+  }
+
+  int wordType(char startChar)
+  {
+    if (startChar == '_')
+      return 1;
+
+    if ((startChar >= 'A' && startChar <= 'Z') || (startChar >= 'a' && startChar <= 'z'))
+      return 2;
+
+    if ((startChar >= '0' && startChar <= '9') || startChar == '.')
+      return 3;
+
+    if (startChar == '\'')
+      return 4;
+
+    if (startChar == '\"')
+      return 5;
+
+    return 0;
   }
 
   bool isInt(string value)
   {
-
     regex regInt("((\\+[1-9][0-9]*)|(\\-[1-9][0-9]*)|([1-9][0-9]*))");
     if (regex_match(value, regInt))
+      return true;
+
+    return false;
+  }
+
+  bool isFloat(string value)
+  {
+    regex regFloat("((\\+[0-9]*\\.[0-9]+)|([0-9]*\\.[0-9]+)|(\\-[0-9]*\\.[0-9]+))");
+    if (regex_match(value, regFloat))
+      return true;
+
+    return false;
+  }
+
+  bool isChar(string value)
+  {
+    regex regChar("(\\'((\\n)|(\\')|(\\\\)|(\\r)|(\\t)|(\\b)|(\\f)|(\\v)|(\\0)|(\")|(.)|([0-9]{1,3}))\\')");
+    if (regex_match(value, regChar))
+      return true;
+
+    return false;
+  }
+
+  bool isString(string value)
+  {
+    regex regString("(\"(.*)\")");
+    if (regex_match(value, regString))
+      return true;
+
+    return false;
+  }
+
+  bool isIdentifier(string value)
+  {
+    regex regIdentifier("(([A-Za-z]*\\_+[A-Za-z]*[0-9]*\\_*[A-Za-z]*\\_*)|([A-Za-z][A-Za-z]*[0-9]*[A-Za-z]*))");
+    if (regex_match(value, regIdentifier))
       return true;
 
     return false;
@@ -257,6 +431,25 @@ class LexicalAnalyzer
     }
 
     return slashes % 2 == 0 ? true : false;
+  }
+
+  void print()
+  {
+    for (int i = 0; i < this->lexemes.size(); i++)
+    {
+      cout << this->lexemes.at(i);
+    }
+  }
+
+  void write()
+  {
+    ofstream file("tokens.txt");
+
+    for (int i = 0; i < this->lexemes.size(); i++)
+    {
+      file << this->lexemes.at(i);
+    }
+    file.close();
   }
 
 private:
