@@ -19,6 +19,25 @@ public:
     this->lexemes.push_back(lex);
   }
 
+  bool backTrack(string word, int pos)
+  {
+    for (int j = (pos - 1); j >= 0; j--)
+    {
+      string s(1, word[j]);
+      if (this->words.findOperator(s) != "Not present" || this->words.findPunctuator(s) != "Not present")
+        return true;
+
+      if (word[j] == ' ')
+        continue;
+
+      if (word[j] == '\n')
+        return true;
+
+      return false;
+    }
+    return true;
+  }
+
   void breakWords(string filename)
   {
     string word = "";
@@ -32,27 +51,34 @@ public:
 
     string temp = "";
     int counter = 0;
-    int line_no = 0;
+    int line_no = 1;
     for (int i = 0; i < word.length(); i++)
     {
+
+      if (temp[0] == '\'' && temp.length() > 3)
+      {
+        this->classifyWord(temp, line_no);
+        temp = "";
+      }
 
       if (temp[0] != '\"' && temp[0] != '\'')
       {
 
-        if (word[i] == '\\' && word[i + 1] == '*')
+        if (word[i] == '/' && word[i + 1] == '*')
         {
           if (temp != "")
           {
             this->classifyWord(temp, line_no);
             temp = "";
           }
-
-          while (word[i - 1] != '*' && word[i] != '/')
+          i++;
+          i++;
+          do
           {
             if (word[i] == '\n')
               line_no++;
             i++;
-          }
+          } while (word[i - 1] != '*' && word[i] != '/' && i < word.length());
           continue;
         }
 
@@ -73,19 +99,32 @@ public:
 
         if (word[i] == ' ')
         {
+          if (temp != "")
+          {
+            this->classifyWord(temp, line_no);
+            temp = "";
+          }
           continue;
         }
 
         if (word[i] == '\"' || word[i] == '\'')
         {
-          this->classifyWord(temp, line_no);
-          temp = "";
+          if (temp != "")
+          {
+            this->classifyWord(temp, line_no);
+            temp = "";
+          }
           temp.push_back(word[i]);
           continue;
         }
 
         if (double_op(word[i], word[i + 1]))
         {
+          if (temp != "")
+          {
+            this->classifyWord(temp, line_no);
+            temp = "";
+          }
           temp.push_back(word[i]);
           temp.push_back(word[i + 1]);
           i++;
@@ -96,6 +135,11 @@ public:
 
         if (word[i] == '-' && word[i + 1] == '>')
         {
+          if (temp != "")
+          {
+            this->classifyWord(temp, line_no);
+            temp = "";
+          }
           temp.push_back(word[i]);
           temp.push_back(word[i + 1]);
           i++;
@@ -104,9 +148,58 @@ public:
           continue;
         }
 
+        string intcheck(1, word[i + 1]);
+        string floatcheck = "";
+        floatcheck.push_back(word[i + 1]);
+        floatcheck.push_back(word[i + 2]);
+
+        if ((word[i] == '+' || word[i] == '-') && (this->backTrack(word, i)) && (isInt(intcheck) || isFloat(floatcheck)))
+        {
+
+          if (isInt(intcheck) || isFloat(floatcheck))
+          {
+
+            if (temp != "")
+            {
+              this->classifyWord(temp, line_no);
+              temp = "";
+            }
+
+            temp.push_back(word[i]);
+            temp.push_back(word[i + 1]);
+            i++;
+            i++;
+
+            //s.push_back(word[i]);
+
+            while ((isInt(intcheck) || isFloat(floatcheck)) && i < word.length())
+            {
+              temp.push_back(word[i]);
+              floatcheck.push_back(word[i + 1]);
+              intcheck.push_back(word[i]);
+              i++;
+            }
+            if (isFloat(floatcheck))
+            {
+              floatcheck.pop_back();
+              temp.push_back(word[i]);
+              i++;
+            }
+            this->classifyWord(temp, line_no);
+            temp = "";
+            continue;
+          }
+        }
+
         string s(1, word[i]);
         if (this->words.findOperator(s) != "Not present")
         {
+          if (temp != "")
+          {
+            this->classifyWord(temp, line_no);
+            temp = "";
+          }
+
           temp.push_back(word[i]);
           this->classifyWord(temp, line_no);
           temp = "";
@@ -115,6 +208,7 @@ public:
 
         if (this->words.findPunctuator(s) != "Not present")
         {
+
           if (this->words.findPunctuator(s) == ".")
           {
             string search(1, word[i + 1]);
@@ -134,13 +228,20 @@ public:
               }
               this->classifyWord(temp, line_no);
               temp = "";
+              i--;
               continue;
             }
 
             if (isInt(search))
             {
-              this->classifyWord(temp, line_no);
-              temp = "";
+              if (temp != "")
+              {
+                this->classifyWord(temp, line_no);
+                temp = "";
+              }
+
+              //this->classifyWord(temp, line_no);
+              //temp = "";
               temp.push_back(word[i]);
               i++;
               search = "";
@@ -155,11 +256,16 @@ public:
               }
               this->classifyWord(temp, line_no);
               temp = "";
+              i--;
               continue;
             }
             else
             {
-
+              if (temp != "")
+              {
+                this->classifyWord(temp, line_no);
+                temp = "";
+              }
               temp.push_back(word[i]);
               this->classifyWord(temp, line_no);
               temp = "";
@@ -168,7 +274,11 @@ public:
           }
           else
           {
-
+            if (temp != "")
+            {
+              this->classifyWord(temp, line_no);
+              temp = "";
+            }
             temp.push_back(word[i]);
             this->classifyWord(temp, line_no);
             temp = "";
@@ -179,6 +289,12 @@ public:
 
       if (word[i] == '\n')
       {
+        if (temp != "")
+        {
+          this->classifyWord(temp, line_no);
+          temp = "";
+        }
+
         temp.push_back(word[i]);
         this->classifyWord(temp, line_no);
         temp = "";
@@ -198,8 +314,12 @@ public:
 
       temp.push_back(word[i]);
     }
-    temp.pop_back();
-    this->classifyWord(temp, line_no);
+
+    if (temp.length() != 0)
+      temp.pop_back();
+
+    if (temp != "")
+      this->classifyWord(temp, line_no);
   }
 
   void classifyWord(string value, int line_no)
@@ -247,6 +367,20 @@ public:
       if (value == ".")
       {
         Lex.setLexeme(line_no, ".", value);
+        this->addLexeme(Lex);
+        break;
+      }
+
+      if (value == "++" || value == "--")
+      {
+        Lex.setLexeme(line_no, "inc_dec", value);
+        this->addLexeme(Lex);
+        break;
+      }
+
+      if (value == "+" || value == "-")
+      {
+        Lex.setLexeme(line_no, "PM", value);
         this->addLexeme(Lex);
         break;
       }
@@ -335,7 +469,7 @@ public:
     if ((startChar >= 'A' && startChar <= 'Z') || (startChar >= 'a' && startChar <= 'z'))
       return 2;
 
-    if ((startChar >= '0' && startChar <= '9') || startChar == '.')
+    if ((startChar >= '0' && startChar <= '9') || (startChar == '.') || (startChar == '-') || (startChar == '+'))
       return 3;
 
     if (startChar == '\'')
@@ -367,7 +501,7 @@ public:
 
   bool isChar(string value)
   {
-    regex regChar("(\\'((\\n)|(\\')|(\\\\)|(\\r)|(\\t)|(\\b)|(\\f)|(\\v)|(\\0)|(\")|(.)|([0-9]{1,3}))\\')");
+    regex regChar("(\\'((\\\\n)|(\\')|(\\\\\\\\)|(\\\\r)|(\\\\t)|(\\\\b)|(\\\\f)|(\\\\v)|(\\\\0)|(\")|(.)|([0-9]{1,3}))\\')");
     if (regex_match(value, regChar))
       return true;
 
@@ -441,9 +575,9 @@ public:
     }
   }
 
-  void write()
+  void write(string filename)
   {
-    ofstream file("tokens.txt");
+    ofstream file(filename);
 
     for (int i = 0; i < this->lexemes.size(); i++)
     {

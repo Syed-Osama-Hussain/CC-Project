@@ -32,6 +32,26 @@
     "utility": "cpp",
     "chrono": "cpp",
     "ratio": "cpp",
-    "scoped_allocator": "cpp"
+    "scoped_allocator": "cpp",
+    "atomic": "cpp",
+    "cfenv": "cpp",
+    "cinttypes": "cpp",
+    "cmath": "cpp",
+    "codecvt": "cpp",
+    "complex": "cpp",
+    "condition_variable": "cpp",
+    "csetjmp": "cpp",
+    "csignal": "cpp",
+    "cstdarg": "cpp",
+    "cstddef": "cpp",
+    "cuchar": "cpp",
+    "fstream": "cpp",
+    "future": "cpp",
+    "iomanip": "cpp",
+    "mutex": "cpp",
+    "shared_mutex": "cpp",
+    "thread": "cpp",
+    "typeindex": "cpp",
+    "valarray": "cpp"
   }
 }

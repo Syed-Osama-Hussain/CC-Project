@@ -22,3 +22,4 @@ exit exit
 loop loop
 function function
 new new
+void void
