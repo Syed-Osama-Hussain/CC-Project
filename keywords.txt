@@ -1,8 +1,8 @@
-int dataType
-float dataType
-char dataType
-var dataType
-string dataType
+int DT
+float DT
+char DT
+var DT
+string DT
 extends extends
 class class
 public accessModifier
@@ -23,3 +23,4 @@ loop loop
 function function
 new new
 void void
+this this

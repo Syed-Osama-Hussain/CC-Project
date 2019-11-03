@@ -3,7 +3,7 @@ using namespace std;
 
 class Lexeme
 {
-  public:
+public:
   Lexeme()
   {
     this->line_no = 0;

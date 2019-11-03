@@ -1,41 +1,4 @@
-ab7 ID 1
-.11 FloatConst 1
-.56 FloatConst 1
-bcx ID 1
-.55 FloatConst 1
-.55 FloatConst 1
-. . 1
-a5c ID 1
-
- Terminator 1
-char dataType 2
-c ID 2
-= = 2
-"abc++=\\" StringConst 2
-abc\\\ Invalid Lexeme 2
-"abc" StringConst 2
-a ID 2
-= = 2
-b ID 2
-= = 2
-c ID 2
-
- Terminator 2
-string dataType 3
-s ID 3
-= = 3
-'\\\ Invalid Lexeme 3
-'+' CharConst 3
-++ inc_dec 3
-'\n' CharConst 3
-+ PM 3
-= = 3
-35 IntConst 3
-'\\ Invalid Lexeme 3
-
- Terminator 3
-return return 4
-a ID 4
-&& && 4
-== ROP 4
-@bc Invalid Lexeme 4
+function function 1
+name ID 1
+( ( 1
+$ $ 1
