@@ -759,7 +759,7 @@ public:
       if (temp == "{")
       {
         this->counter++;
-        if (MST_IFL())
+        if (this->MST_IFL())
         {
           if (this->lexemes.at(this->counter).getClassName() == "}")
           {
@@ -864,7 +864,7 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "static")
     {
       this->counter++;
-      if (function_or_dec())
+      if (this->function_or_dec())
       {
         return true;
       }
@@ -876,20 +876,20 @@ public:
   {
     if (this->lexemes.at(this->counter).getClassName() == "function")
     {
-      if (fun_st())
+      if (this->fun_st())
         return true;
     }
 
     if (this->lexemes.at(this->counter).getClassName() == "DT" || this->lexemes.at(this->counter).getClassName() == "var")
     {
-      if (Dec())
+      if (this->Dec())
         return true;
     }
 
     if (this->lexemes.at(this->counter).getClassName() == "ID")
     {
       this->counter++;
-      if (obj_dec())
+      if (this->obj_dec())
       {
         if (this->lexemes.at(this->counter).getClassName() == "Terminator")
         {
@@ -903,14 +903,97 @@ public:
 
   bool inc_dec_start()
   {
+    if (this->lexemes.at(this->counter).getClassName() == "inc_dec")
+    {
+      this->counter++;
+      if (this->p())
+        if (this->lexemes.at(this->counter).getClassName() == "ID")
+        {
+          this->counter++;
+          if (this->static_ref_or_null())
+            if (this->trail())
+              if (this->lexemes.at(this->counter).getClassName() == "Terminator")
+              {
+                this->counter++;
+                return true;
+              }
+        }
+    }
+    return false;
   }
 
   bool return_st()
   {
+    if (this->lexemes.at(this->counter).getClassName() == "return")
+    {
+      this->counter++;
+      if (this->OE())
+        if (this->lexemes.at(this->counter).getClassName() == "Terminator")
+        {
+          this->counter++;
+          return true;
+        }
+    }
+    return false;
   }
 
   bool exit_st()
   {
+    if (this->lexemes.at(this->counter).getClassName() == "exit")
+    {
+      this->counter++;
+      if (this->exit_st1())
+        if (this->lexemes.at(this->counter).getClassName() == "Terminator")
+        {
+          this->counter++;
+          return true;
+        }
+    }
+    return false;
+  }
+
+  bool exit_st1()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "ID" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
+    {
+      if (this->const_or_ID())
+        return true;
+    }
+    else
+    {
+      if (temp == "(")
+      {
+        this->counter++;
+        if (this->const_or_ID())
+          if (this->lexemes.at(this->counter).getClassName() == ")")
+          {
+            this->counter++;
+            return true;
+          }
+      }
+    }
+    return false;
+  }
+
+  bool const_or_ID()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "ID" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
+    {
+      if (this->CONST())
+        return true;
+    }
+    else
+    {
+      if (temp == "ID")
+      {
+        this->counter++;
+        if (this->trail())
+          return true;
+      }
+    }
+    return false;
   }
 
   bool loop_st()
@@ -919,10 +1002,110 @@ public:
 
   bool if_else()
   {
+    if (this->lexemes.at(this->counter).getClassName() == "if")
+    {
+      this->counter++;
+      if (this->lexemes.at(this->counter).getClassName() == "(")
+      {
+        this->counter++;
+        if (this->OE())
+          if (this->lexemes.at(this->counter).getClassName() == ")")
+          {
+            this->counter++;
+            if (this->body_fn())
+              if (this->oelse())
+                return true;
+          }
+      }
+    }
+    return false;
+  }
+
+  bool oelse()
+  {
+    if (this->lexemes.at(this->counter).getClassName() == "Terminator")
+    {
+      this->counter++;
+      return true;
+    }
+    else
+    {
+      if (this->lexemes.at(this->counter).getClassName() == "else")
+      {
+        this->counter++;
+        if (this->body_fn())
+          return true;
+      }
+    }
+    return false;
   }
 
   bool hash_or_ID_start()
   {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "#")
+    {
+      this->counter++;
+      if (temp == "ID")
+      {
+        this->counter++;
+        if (this->static_ref_or_null())
+          if (this->trail_oe_or_fn())
+            if (this->lexemes.at(this->counter).getClassName() == "Terminator")
+            {
+              this->counter++;
+              return true;
+            }
+      }
+    }
+    else
+    {
+      if (temp == "ID")
+      {
+        this->counter++;
+        if (this->trail_or_obj())
+          if (this->lexemes.at(this->counter).getClassName() == "Terminator")
+          {
+            this->counter++;
+            return true;
+          }
+      }
+    }
+    return false;
+  }
+
+  bool trail_oe_or_fn()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "(")
+    {
+      if (this->fn_call())
+        return true;
+    }
+    else
+    {
+      if (temp == "." || temp == "[" || temp == "=" || temp == "inc_dec")
+        return true;
+    }
+    return false;
+  }
+
+  bool trail_or_obj()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "#" || temp == "ID")
+    {
+      if (this->obj_dec())
+      {
+        return true;
+      }
+    }
+    else
+    {
+      if (temp == "::" || temp == "inc_dec" || temp == "=" || temp == "." || temp == "(" || temp == "[")
+        return true;
+    }
+    return false;
   }
 
   bool Dec()
@@ -930,11 +1113,11 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "DT" || temp == "var")
     {
-      if (DTs())
+      if (this->DTs())
       {
-        if (p_st_or_null_p_st())
+        if (this->p_st_or_null_p_st())
         {
-          if (list())
+          if (this->list())
             return true;
         }
       }
@@ -950,7 +1133,7 @@ public:
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
         this->counter++;
-        if (new_init())
+        if (this->new_init())
         {
           return true;
         }
@@ -961,7 +1144,7 @@ public:
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
         this->counter++;
-        if (init())
+        if (this->init())
         {
           return false;
         }
@@ -975,7 +1158,7 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "=")
     {
       this->counter++;
-      if (new_arr_const())
+      if (this->new_arr_const())
       {
         return true;
       }
@@ -992,13 +1175,13 @@ public:
 
   bool new_arr_const()
   {
-    if (this->lexemes.at(this->counter).getClassName == "new")
+    if (this->lexemes.at(this->counter).getClassName() == "new")
     {
       this->counter++;
-      if (this->lexemes.at(this->counter).getClassName == "DT")
+      if (this->lexemes.at(this->counter).getClassName() == "DT")
       {
         this->counter++;
-        if (arr_or_null())
+        if (this->arr_or_null())
         {
           return true;
         }
@@ -1006,19 +1189,19 @@ public:
     }
     else
     {
-      if (CONST())
+      if (this->CONST())
         return true;
     }
   }
 
   bool arr_or_null()
   {
-    if (this->lexemes.at(this->counter).getClassName == "[")
+    if (this->lexemes.at(this->counter).getClassName() == "[")
     {
       this->counter++;
-      if (OE())
+      if (this->OE())
       {
-        if (this->lexemes.at(this->counter).getClassName == "]")
+        if (this->lexemes.at(this->counter).getClassName() == "]")
         {
           this->counter++;
           return true;
@@ -1027,7 +1210,7 @@ public:
     }
     else
     {
-      if (this->lexemes.at(this->counter).getClassName == "," || this->lexemes.at(this->counter).getClassName == "Terminator")
+      if (this->lexemes.at(this->counter).getClassName() == "," || this->lexemes.at(this->counter).getClassName() == "Terminator")
       {
         return true;
       }
@@ -1037,17 +1220,17 @@ public:
 
   bool init()
   {
-    if (this->lexemes.at(this->counter).getClassName == "=")
+    if (this->lexemes.at(this->counter).getClassName() == "=")
     {
       this->counter++;
-      if (new_arr_init())
+      if (this->new_arr_init())
       {
         return true;
       }
     }
     else
     {
-      if (this->lexemes.at(this->counter).getClassName == "," || this->lexemes.at(this->counter).getClassName == "Terminator")
+      if (this->lexemes.at(this->counter).getClassName() == "," || this->lexemes.at(this->counter).getClassName() == "Terminator")
       {
         return true;
       }
@@ -1087,7 +1270,7 @@ public:
   bool new_arr_init()
   {
     string temp = this->lexemes.at(this->counter).getClassName();
-    if (CONST())
+    if (this->CONST())
     {
       return true;
     }
@@ -1099,7 +1282,7 @@ public:
         if (this->lexemes.at(this->counter).getClassName() == "[")
         {
           this->counter++;
-          if (OE())
+          if (this->OE())
           {
             if (this->lexemes.at(this->counter).getClassName() == "]")
             {
@@ -1117,8 +1300,8 @@ public:
           if (this->lexemes.at(this->counter).getClassName() == "ID")
           {
             this->counter++;
-            if (static_ref_or_null())
-              if (trail_oe())
+            if (this->static_ref_or_null())
+              if (this->trail_oe())
                 return true;
           }
         }
@@ -1127,8 +1310,8 @@ public:
           if (this->lexemes.at(this->counter).getClassName() == "ID")
           {
             this->counter++;
-            if (static_ref_or_null())
-              if (trail_oe())
+            if (this->static_ref_or_null())
+              if (this->trail_oe())
                 return true;
           }
         }
@@ -1143,8 +1326,8 @@ public:
     if (temp == ",")
     {
       this->counter++;
-      if (p_st_or_null_p_st())
-        if (list())
+      if (this->p_st_or_null_p_st())
+        if (this->list())
           return true;
     }
     else
@@ -1162,13 +1345,13 @@ public:
   {
     if (this->lexemes.at(this->counter).getClassName() == "#" || this->lexemes.at(this->counter).getClassName() == "ID")
     {
-      if (p())
+      if (this->p())
       {
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
           this->counter++;
-          if (init1())
-            if (list1())
+          if (this->init1())
+            if (this->list1())
               return true;
         }
       }
@@ -1198,7 +1381,7 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "[")
     {
       this->counter++;
-      if (OE())
+      if (this->OE())
       {
         if (this->lexemes.at(this->counter).getClassName() == "]")
         {
@@ -1215,7 +1398,7 @@ public:
         if (this->lexemes.at(this->counter).getClassName() == "new")
         {
           this->counter++;
-          if (pl_or_arr())
+          if (this->pl_or_arr())
           {
             return true;
           }
@@ -1238,7 +1421,7 @@ public:
     if (temp == "(")
     {
       this->counter++;
-      if (OEs())
+      if (this->OEs())
         if (this->lexemes.at(this->counter).getClassName() == ")")
         {
           this->counter++;
@@ -1250,7 +1433,7 @@ public:
       if (this->lexemes.at(this->counter).getClassName() == "[")
       {
         this->counter++;
-        if (OE())
+        if (this->OE())
           if (this->lexemes.at(this->counter).getClassName() == "]")
           {
             this->counter++;
@@ -1266,8 +1449,8 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
-      if (OE())
-        if (next1())
+      if (this->OE())
+        if (this->next1())
           return true;
     }
     return false;
@@ -1282,8 +1465,8 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
-      if (AE())
-        if (OE1())
+      if (this->AE())
+        if (this->OE1())
           return true;
     }
     return false;
@@ -1294,8 +1477,8 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
-      if (RE())
-        if (AE1())
+      if (this->RE())
+        if (this->AE1())
           return true;
     }
     return false;
@@ -1306,8 +1489,8 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
-      if (PME())
-        if (RE1())
+      if (this->PME())
+        if (this->RE1())
           return true;
     }
     return false;
@@ -1318,8 +1501,8 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
-      if (MDME())
-        if (PME1())
+      if (this->MDME())
+        if (this->PME1())
           return true;
     }
     return false;
@@ -1327,10 +1510,224 @@ public:
 
   bool MDME()
   {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
+    {
+      if (this->OPs())
+        if (this->MDME1())
+          return true;
+    }
+    return false;
+  }
+
+  bool OPs()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "#" || temp == "ID")
+    {
+      if (this->p())
+      {
+        if (this->static_ref_or_null())
+        {
+          if (this->trail_or_fn())
+            return true;
+        }
+      }
+    }
+    else
+    {
+      if (temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
+      {
+        this->counter++;
+        return true;
+      }
+      else
+      {
+        if (temp == "(")
+        {
+          this->counter++;
+          if (this->OE())
+          {
+            if (this->lexemes.at(this->counter).getClassName() == ")")
+              return true;
+          }
+        }
+        else
+        {
+          if (temp == "!")
+          {
+            this->counter++;
+            if (this->OPs())
+              return true;
+          }
+          else
+          {
+            if (temp == "inc_dec")
+            {
+              this->counter++;
+              if (this->lexemes.at(this->counter).getClassName() == "ID")
+              {
+                this->counter++;
+                if (this->trail())
+                  return true;
+              }
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  bool trail_or_fn()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "(")
+    {
+      if (this->fn_call())
+        if (this->trail())
+          return true;
+    }
+    else
+    {
+      if (temp == "[" || temp == ".")
+      {
+        if (this->trail())
+          if (this->inc_dec_or_null())
+            return true;
+      }
+      else
+      {
+        if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == ",")
+          return true;
+      }
+    }
+    return false;
+  }
+
+  bool fn_call()
+  {
+    if (this->lexemes.at(this->counter).getClassName() == "(")
+    {
+      this->counter++;
+      if (this->OEs())
+        if (this->lexemes.at(this->counter).getClassName() == ")")
+        {
+          this->counter++;
+          return true;
+        }
+    }
+    return true;
+  }
+
+  bool inc_dec_or_null()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "inc_dec")
+    {
+      this->counter++;
+      return true;
+    }
+    else
+    {
+      if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == ",")
+        return true;
+    }
+    return false;
+  }
+
+  bool trail()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == ".")
+    {
+      this->counter++;
+      if (this->fn_call_or_null())
+        if (this->trail())
+          return true;
+    }
+    else
+    {
+      if (temp == "[")
+      {
+        this->counter++;
+        if (this->OE())
+        {
+          if (this->lexemes.at(this->counter).getClassName() == "]")
+          {
+            this->counter++;
+            if (this->trail_no_arr())
+              return true;
+          }
+        }
+      }
+      else
+      {
+        if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == "," || temp == "inc_dec")
+          return true;
+      }
+    }
+    return false;
+  }
+
+  bool fn_call_or_null()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "(")
+    {
+      if (this->fn_call())
+        return true;
+    }
+    else
+    {
+      if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == "," || temp == "inc_dec" || temp == "." || temp == "[")
+        return true;
+    }
+    return false;
+  }
+
+  bool trail_no_arr()
+  {
+  }
+
+  bool MDME1()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "MDM")
+    {
+      this->counter++;
+      if (this->OPs())
+        if (this->MDME1())
+          return true;
+    }
+    else
+    {
+      string temp = this->lexemes.at(this->counter).getClassName();
+      if (temp == "]" || temp == ")" || temp == "," || temp == "Terminator" || temp == ";" || temp == "||" || temp == "&&" || temp == "ROP" || temp == "PM")
+      {
+        return true;
+      }
+    }
   }
 
   bool PME1()
   {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "PM")
+    {
+      this->counter++;
+      if (this->MDME())
+        if (this->PME1())
+          return true;
+    }
+    else
+    {
+      string temp = this->lexemes.at(this->counter).getClassName();
+      if (temp == "]" || temp == ")" || temp == "," || temp == "Terminator" || temp == ";" || temp == "||" || temp == "&&" || temp == "ROP")
+      {
+        return true;
+      }
+    }
   }
 
   bool RE1()
@@ -1338,8 +1735,8 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "ROP")
     {
       this->counter++;
-      if (PME())
-        if (RE1())
+      if (this->PME())
+        if (this->RE1())
           return true;
     }
     else
@@ -1358,8 +1755,8 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "&&")
     {
       this->counter++;
-      if (RE())
-        if (AE1())
+      if (this->RE())
+        if (this->AE1())
           return true;
     }
     else
@@ -1378,8 +1775,8 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "||")
     {
       this->counter++;
-      if (AE())
-        if (OE1())
+      if (this->AE())
+        if (this->OE1())
           return true;
     }
     else
@@ -1399,6 +1796,143 @@ public:
 
   bool trail_oe()
   {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == ".")
+    {
+      this->counter++;
+      if (this->lexemes.at(this->counter).getClassName() == "ID")
+      {
+        this->counter++;
+        if (this->function_or_trail())
+          return true;
+      }
+    }
+    else
+    {
+      if (temp == "[")
+      {
+        this->counter++;
+        if (this->OE())
+          if (this->lexemes.at(this->counter).getClassName() == "]")
+          {
+            this->counter++;
+            if (this->trail_oe_no_arr())
+              return true;
+          }
+      }
+      else
+      {
+        if (temp == "=" || temp == "inc_dec")
+          if (this->assign_or_inc_dec())
+            return true;
+      }
+    }
+    return false;
+  }
+
+  bool assign_or_inc_dec()
+  {
+    if (this->lexemes.at(this->counter).getClassName() == "inc_dec")
+    {
+      this->counter++;
+      return true;
+    }
+    else
+    {
+      if (this->lexemes.at(this->counter).getClassName() == "=")
+        if (this->assign_st())
+          return true;
+    }
+    return false;
+  }
+
+  bool assign_st()
+  {
+    if (this->lexemes.at(this->counter).getClassName() == "=")
+    {
+      this->counter++;
+      if (this->OE())
+        return true;
+    }
+    return false;
+  }
+
+  bool function_or_trail()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "(")
+    {
+      if (this->fn_call())
+        if (this->trail_oe_null())
+          return true;
+    }
+    else
+    {
+      if (temp == "." || temp == "[" || temp == "inc_dec" || temp == "=")
+        if (this->trail_oe())
+          return true;
+    }
+    return false;
+  }
+
+  bool trail_oe_null()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == ".")
+    {
+      this->counter++;
+      if (temp == "ID")
+      {
+        this->counter++;
+        if (this->function_or_trail())
+          return true;
+      }
+    }
+    else
+    {
+      if (temp == "[")
+      {
+        this->counter++;
+        if (this->OE())
+          if (this->lexemes.at(this->counter).getClassName() == "]")
+          {
+            this->counter++;
+            if (this->trail_oe_no_arr())
+              return true;
+          }
+      }
+      else
+      {
+        if (temp == "Terminator")
+        {
+          this->counter++;
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  bool trail_oe_no_arr()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == ".")
+    {
+      this->counter++;
+      if (this->lexemes.at(this->counter).getClassName() == "ID")
+      {
+        this->counter++;
+        if (this->function_or_trail())
+          return true;
+      }
+    }
+    else
+    {
+      if (temp == "=" || temp == "inc_dec")
+        if (this->assign_or_inc_dec())
+          return true;
+    }
+    return false;
   }
 
   bool list1()
@@ -1406,7 +1940,7 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == ",")
     {
       this->counter++;
-      if (obj_dec())
+      if (this->obj_dec())
         return true;
     }
     else
@@ -1422,7 +1956,7 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == ",")
     {
       this->counter++;
-      if (OE())
+      if (this->OE())
         return true;
     }
     else
