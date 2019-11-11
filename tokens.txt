@@ -1,4 +1,153 @@
-function function 1
-name ID 1
-( ( 1
-$ $ 1
+class class 1
+myclass ID 1
+extends extends 1
+baseClass ID 1
+{ { 1
+
+ Terminator 1
+
+ Terminator 2
+myclass ID 3
+( ( 3
+) ) 3
+{ { 3
+
+ Terminator 3
+this this 4
+-> -> 4
+x ID 4
+= = 4
+y ID 4
+
+ Terminator 4
+
+ Terminator 5
+} } 6
+
+ Terminator 6
+
+ Terminator 7
+public accessModifier 8
+function function 8
+init ID 8
+( ( 8
+# # 8
+a ID 8
+, , 8
+b ID 8
+) ) 8
+{ { 8
+
+ Terminator 8
+this this 9
+-> -> 9
+x ID 9
+[ [ 9
+i ID 9
+] ] 9
+. . 9
+funct ID 9
+( ( 9
+) ) 9
+
+ Terminator 9
+loop loop 10
+( ( 10
+int DT 10
+b ID 10
+= = 10
+1 IntConst 10
+; ; 10
+a ID 10
+< ROP 10
+b ID 10
++ PM 10
+3 IntConst 10
+; ; 10
+b ID 10
+++ inc_dec 10
+) ) 10
+{ { 10
+
+ Terminator 10
+break executionMod 11
+
+ Terminator 11
+
+ Terminator 12
+} } 13
+
+ Terminator 13
+} } 14
+
+ Terminator 14
+
+ Terminator 15
+private accessModifier 16
+var DT 16
+z ID 16
+
+ Terminator 16
+
+ Terminator 17
+
+ Terminator 18
+} } 19
+
+ Terminator 19
+
+ Terminator 20
+function function 21
+name ID 21
+( ( 21
+) ) 21
+{ { 21
+
+ Terminator 21
+return return 22
+a ID 22
++ PM 22
+b ID 22
+
+ Terminator 22
+
+ Terminator 23
+} } 24
+
+ Terminator 24
+
+ Terminator 25
+obj ID 26
+myobj ID 26
+= = 26
+new new 26
+obj ID 26
+( ( 26
+5 IntConst 26
+, , 26
+3 IntConst 26
+) ) 26
+
+ Terminator 26
+myobj ID 27
+. . 27
+x ID 27
+. . 27
+a ID 27
+[ [ 27
+5 IntConst 27
++ PM 27
+i ID 27
+] ] 27
+. . 27
+fn ID 27
+( ( 27
+z ID 27
++ PM 27
+5 IntConst 27
+* MDM 27
+c ID 27
+) ) 27
+
+ Terminator 27
+$ $ 28

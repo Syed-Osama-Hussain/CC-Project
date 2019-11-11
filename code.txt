@@ -1,1 +1,27 @@
-function name(
+class myclass extends baseClass {
+  
+  myclass(){
+    this->x = y
+
+  }
+
+  public function init(#a,b){
+    this->x[i].funct()
+    loop(int b = 1;a<b+3; b++){
+      break
+
+    }
+  }
+
+  private var z
+
+
+}
+
+function name( ) {
+  return a+b
+  
+}
+
+obj myobj = new obj(5,3)
+myobj.x.a[5+i].fn(z+5*c)

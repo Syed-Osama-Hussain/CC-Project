@@ -1,14 +1,14 @@
 #include <iostream>
 #include <regex>
 #include <vector>
-#include "lexical.h"
+#include "analyzer.h"
 using namespace std;
 
 int main()
 {
-  LexicalAnalyzer analyzer;
+  Analyzer analyzer;
   analyzer.breakWords("code.txt");
-  analyzer.print();
+ // analyzer.print();
   analyzer.write("tokens.txt");
   cout << analyzer.syntaxStart() << endl;
   system("pause");
