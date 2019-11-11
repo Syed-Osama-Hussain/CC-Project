@@ -5,7 +5,7 @@ class myclass extends baseClass {
 
   }
 
-  public function init(#a,b){
+  public virtual function init(#a,b){
     this->x[i].funct()
     loop(int b = 1;a<b+3; b++){
       break
@@ -18,10 +18,17 @@ class myclass extends baseClass {
 
 }
 
-function name( ) {
+static function name( ) {
   return a+b
   
 }
 
 obj myobj = new obj(5,3)
-myobj.x.a[5+i].fn(z+5*c)
+
+
+if(i<b(z+a)-9)
+{
+  myclass::z.funct()
+  string arr = new [i+c]
+
+}

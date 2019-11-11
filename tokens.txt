@@ -28,6 +28,7 @@ y ID 4
 
  Terminator 7
 public accessModifier 8
+virtual virtual 8
 function function 8
 init ID 8
 ( ( 8
@@ -97,6 +98,7 @@ z ID 16
  Terminator 19
 
  Terminator 20
+static static 21
 function function 21
 name ID 21
 ( ( 21
@@ -129,25 +131,51 @@ obj ID 26
 ) ) 26
 
  Terminator 26
-myobj ID 27
-. . 27
-x ID 27
-. . 27
-a ID 27
-[ [ 27
-5 IntConst 27
-+ PM 27
-i ID 27
-] ] 27
-. . 27
-fn ID 27
-( ( 27
-z ID 27
-+ PM 27
-5 IntConst 27
-* MDM 27
-c ID 27
-) ) 27
 
  Terminator 27
-$ $ 28
+
+ Terminator 28
+if if 29
+( ( 29
+i ID 29
+< ROP 29
+b ID 29
+( ( 29
+z ID 29
++ PM 29
+a ID 29
+) ) 29
+- PM 29
+9 IntConst 29
+) ) 29
+
+ Terminator 29
+{ { 30
+
+ Terminator 30
+myclass ID 31
+:: :: 31
+z ID 31
+. . 31
+funct ID 31
+( ( 31
+) ) 31
+
+ Terminator 31
+string DT 32
+arr ID 32
+= = 32
+new new 32
+[ [ 32
+i ID 32
++ PM 32
+c ID 32
+] ] 32
+
+ Terminator 32
+
+ Terminator 33
+} } 34
+
+ Terminator 34
+$ $ 35

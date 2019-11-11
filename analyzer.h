@@ -30,7 +30,7 @@ public:
     for (int j = (pos - 1); j >= 0; j--)
     {
       string s(1, word[j]);
-      if (this->words.findOperator(s) != "Not present" || this->words.findPunctuator(s) != "Not present")
+      if (this->words.findOperator(s) != "Not present" || (this->words.findPunctuator(s) != "Not present" && this->words.findPunctuator(s) != ")"))
         return true;
 
       if (word[j] == ' ')
@@ -82,8 +82,14 @@ public:
           {
             if (word[i] == '\n')
               line_no++;
+            //            cout<<word[i]<<i<<endl;
+
             i++;
-          } while (word[i - 1] != '*' && word[i] != '/' && i < word.length());
+            //cout << word[i - 1] << word[i] << endl;
+            if(word[i-1] == '*' && word[i] == '/')
+              break;
+
+          } while (i < word.length());
           continue;
         }
 
@@ -501,6 +507,7 @@ public:
 
   bool isInt(string value)
   {
+
     regex regInt("((\\+[1-9][0-9]*)|(\\-[1-9][0-9]*)|([1-9][0-9]*))");
     if (regex_match(value, regInt))
       return true;
@@ -1243,11 +1250,9 @@ public:
       }
     }
     return false;
-
   }
 
-
-    bool list_class_loop()
+  bool list_class_loop()
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ",")
@@ -1577,12 +1582,12 @@ public:
         {
           this->counter++;
           if (this->trail_oe_this())
-          string temp = this->lexemes.at(this->counter).getClassName(); 
-            if (this->lexemes.at(this->counter).getClassName() == "Terminator")
-            {
-              this->counter++;
-              return true;
-            }
+            string temp = this->lexemes.at(this->counter).getClassName();
+          if (this->lexemes.at(this->counter).getClassName() == "Terminator")
+          {
+            this->counter++;
+            return true;
+          }
         }
       }
     }
@@ -1600,8 +1605,8 @@ public:
     else
     {
       if (temp == "." || temp == "[" || temp == "=" || temp == "inc_dec")
-        if(this->trail_oe_class())
-        return true;
+        if (this->trail_oe_class())
+          return true;
     }
     return false;
   }
@@ -1908,12 +1913,13 @@ public:
         if (this->lexemes.at(this->counter).getClassName() == "new")
         {
           this->counter++;
-          if(this->lexemes.at(this->counter).getClassName() == "ID"){
-            this->counter++;
-          if (this->pl_or_arr_class())
+          if (this->lexemes.at(this->counter).getClassName() == "ID")
           {
-            return true;
-          }
+            this->counter++;
+            if (this->pl_or_arr_class())
+            {
+              return true;
+            }
           }
         }
       }
@@ -3003,8 +3009,7 @@ public:
     return false;
   }
 
-
-    bool list_loop()
+  bool list_loop()
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ",")
@@ -3301,8 +3306,8 @@ public:
     else
     {
       if (temp == "." || temp == "[" || temp == "=" || temp == "inc_dec")
-        if(this->trail_oe())
-        return true;
+        if (this->trail_oe())
+          return true;
     }
     return false;
   }
@@ -3365,7 +3370,7 @@ public:
         this->counter++;
         if (this->init())
         {
-          return false;
+          return true;
         }
       }
     }
@@ -3617,12 +3622,13 @@ public:
         if (this->lexemes.at(this->counter).getClassName() == "new")
         {
           this->counter++;
-          if(this->lexemes.at(this->counter).getClassName() == "ID"){
-            this->counter++;
-          if (this->pl_or_arr())
+          if (this->lexemes.at(this->counter).getClassName() == "ID")
           {
-            return true;
-          }
+            this->counter++;
+            if (this->pl_or_arr())
+            {
+              return true;
+            }
           }
         }
       }
@@ -3666,18 +3672,20 @@ public:
     return false;
   }
 
-  bool OEs_or_null(){
+  bool OEs_or_null()
+  {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
       if (this->OEs())
-          return true;
-    }else{
-      if(temp == ")")
+        return true;
+    }
+    else
+    {
+      if (temp == ")")
         return true;
     }
     return false;
-      
   }
 
   bool OEs()
