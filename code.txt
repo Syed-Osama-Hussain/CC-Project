@@ -1,14 +1,35 @@
-class myclass extends baseClass {
+class myclass  {
   
   myclass(){
     this->x = y
 
   }
+  myclass(){
+    this->x = y
+
+  }myclass(){
+    this->x = y
+
+  }
+  
+}
+class myclass extends baseClass {
+  
+  myclass(){
+    this->x = y
+    b++
+    
+  }
 
   public virtual function init(#a,b){
     this->x[i].funct()
-    loop(int b = 1;a<b+3; b++){
+    loop(int b = 1;a<a[3].fn().v!=2; b++){
       break
+      loop(int b = 1;a<b+3&&a[a+b*g<v&&4].fn()!=2; b++){
+      this->fn()
+
+      break
+      }
 
     }
   }
@@ -24,11 +45,18 @@ static function name( ) {
 }
 
 obj myobj = new obj(5,3)
+int #myvar = new int
 
+loop(int b = 1;a<b+3&&a[a+b*g<v&&4].fn()!=2; b++){
+  fn()
+
+  break
+  }
 
 if(i<b(z+a)-9)
 {
   myclass::z.funct()
   string arr = new [i+c]
-
+  float mynewvar = a+c
+  
 }

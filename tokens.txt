@@ -1,7 +1,5 @@
 class class 1
 myclass ID 1
-extends extends 1
-baseClass ID 1
 { { 1
 
  Terminator 1
@@ -25,53 +23,33 @@ y ID 4
 } } 6
 
  Terminator 6
+myclass ID 7
+( ( 7
+) ) 7
+{ { 7
 
  Terminator 7
-public accessModifier 8
-virtual virtual 8
-function function 8
-init ID 8
-( ( 8
-# # 8
-a ID 8
-, , 8
-b ID 8
-) ) 8
-{ { 8
+this this 8
+-> -> 8
+x ID 8
+= = 8
+y ID 8
 
  Terminator 8
-this this 9
--> -> 9
-x ID 9
-[ [ 9
-i ID 9
-] ] 9
-. . 9
-funct ID 9
-( ( 9
-) ) 9
 
  Terminator 9
-loop loop 10
+} } 10
+myclass ID 10
 ( ( 10
-int DT 10
-b ID 10
-= = 10
-1 IntConst 10
-; ; 10
-a ID 10
-< ROP 10
-b ID 10
-+ PM 10
-3 IntConst 10
-; ; 10
-b ID 10
-++ inc_dec 10
 ) ) 10
 { { 10
 
  Terminator 10
-break executionMod 11
+this this 11
+-> -> 11
+x ID 11
+= = 11
+y ID 11
 
  Terminator 11
 
@@ -79,98 +57,151 @@ break executionMod 11
 } } 13
 
  Terminator 13
-} } 14
 
  Terminator 14
+} } 15
 
  Terminator 15
-private accessModifier 16
-var DT 16
-z ID 16
+class class 16
+myclass ID 16
+extends extends 16
+baseClass ID 16
+{ { 16
 
  Terminator 16
 
  Terminator 17
+myclass ID 18
+( ( 18
+) ) 18
+{ { 18
 
  Terminator 18
-} } 19
+this this 19
+-> -> 19
+x ID 19
+= = 19
+y ID 19
 
  Terminator 19
+b ID 20
+++ inc_dec 20
 
  Terminator 20
-static static 21
-function function 21
-name ID 21
-( ( 21
-) ) 21
-{ { 21
 
  Terminator 21
-return return 22
-a ID 22
-+ PM 22
-b ID 22
+} } 22
 
  Terminator 22
 
  Terminator 23
-} } 24
+public accessModifier 24
+virtual virtual 24
+function function 24
+init ID 24
+( ( 24
+# # 24
+a ID 24
+, , 24
+b ID 24
+) ) 24
+{ { 24
 
  Terminator 24
+this this 25
+-> -> 25
+x ID 25
+[ [ 25
+i ID 25
+] ] 25
+. . 25
+funct ID 25
+( ( 25
+) ) 25
 
  Terminator 25
-obj ID 26
-myobj ID 26
-= = 26
-new new 26
-obj ID 26
+loop loop 26
 ( ( 26
-5 IntConst 26
-, , 26
+int DT 26
+b ID 26
+= = 26
+1 IntConst 26
+; ; 26
+a ID 26
+< ROP 26
+a ID 26
+[ [ 26
 3 IntConst 26
+] ] 26
+. . 26
+fn ID 26
+( ( 26
 ) ) 26
+. . 26
+v ID 26
+!= ROP 26
+2 IntConst 26
+; ; 26
+b ID 26
+++ inc_dec 26
+) ) 26
+{ { 26
 
  Terminator 26
+break executionMod 27
 
  Terminator 27
+loop loop 28
+( ( 28
+int DT 28
+b ID 28
+= = 28
+1 IntConst 28
+; ; 28
+a ID 28
+< ROP 28
+b ID 28
++ PM 28
+3 IntConst 28
+&& && 28
+a ID 28
+[ [ 28
+a ID 28
++ PM 28
+b ID 28
+* MDM 28
+g ID 28
+< ROP 28
+v ID 28
+&& && 28
+4 IntConst 28
+] ] 28
+. . 28
+fn ID 28
+( ( 28
+) ) 28
+!= ROP 28
+2 IntConst 28
+; ; 28
+b ID 28
+++ inc_dec 28
+) ) 28
+{ { 28
 
  Terminator 28
-if if 29
+this this 29
+-> -> 29
+fn ID 29
 ( ( 29
-i ID 29
-< ROP 29
-b ID 29
-( ( 29
-z ID 29
-+ PM 29
-a ID 29
-) ) 29
-- PM 29
-9 IntConst 29
 ) ) 29
 
  Terminator 29
-{ { 30
 
  Terminator 30
-myclass ID 31
-:: :: 31
-z ID 31
-. . 31
-funct ID 31
-( ( 31
-) ) 31
+break executionMod 31
 
  Terminator 31
-string DT 32
-arr ID 32
-= = 32
-new new 32
-[ [ 32
-i ID 32
-+ PM 32
-c ID 32
-] ] 32
+} } 32
 
  Terminator 32
 
@@ -178,4 +209,170 @@ c ID 32
 } } 34
 
  Terminator 34
-$ $ 35
+} } 35
+
+ Terminator 35
+
+ Terminator 36
+private accessModifier 37
+var DT 37
+z ID 37
+
+ Terminator 37
+
+ Terminator 38
+
+ Terminator 39
+} } 40
+
+ Terminator 40
+
+ Terminator 41
+static static 42
+function function 42
+name ID 42
+( ( 42
+) ) 42
+{ { 42
+
+ Terminator 42
+return return 43
+a ID 43
++ PM 43
+b ID 43
+
+ Terminator 43
+
+ Terminator 44
+} } 45
+
+ Terminator 45
+
+ Terminator 46
+obj ID 47
+myobj ID 47
+= = 47
+new new 47
+obj ID 47
+( ( 47
+5 IntConst 47
+, , 47
+3 IntConst 47
+) ) 47
+
+ Terminator 47
+int DT 48
+# # 48
+myvar ID 48
+= = 48
+new new 48
+int DT 48
+
+ Terminator 48
+
+ Terminator 49
+loop loop 50
+( ( 50
+int DT 50
+b ID 50
+= = 50
+1 IntConst 50
+; ; 50
+a ID 50
+< ROP 50
+b ID 50
++ PM 50
+3 IntConst 50
+&& && 50
+a ID 50
+[ [ 50
+a ID 50
++ PM 50
+b ID 50
+* MDM 50
+g ID 50
+< ROP 50
+v ID 50
+&& && 50
+4 IntConst 50
+] ] 50
+. . 50
+fn ID 50
+( ( 50
+) ) 50
+!= ROP 50
+2 IntConst 50
+; ; 50
+b ID 50
+++ inc_dec 50
+) ) 50
+{ { 50
+
+ Terminator 50
+fn ID 51
+( ( 51
+) ) 51
+
+ Terminator 51
+
+ Terminator 52
+break executionMod 53
+
+ Terminator 53
+} } 54
+
+ Terminator 54
+
+ Terminator 55
+if if 56
+( ( 56
+i ID 56
+< ROP 56
+b ID 56
+( ( 56
+z ID 56
++ PM 56
+a ID 56
+) ) 56
+- PM 56
+9 IntConst 56
+) ) 56
+
+ Terminator 56
+{ { 57
+
+ Terminator 57
+myclass ID 58
+:: :: 58
+z ID 58
+. . 58
+funct ID 58
+( ( 58
+) ) 58
+
+ Terminator 58
+string DT 59
+arr ID 59
+= = 59
+new new 59
+[ [ 59
+i ID 59
++ PM 59
+c ID 59
+] ] 59
+
+ Terminator 59
+float DT 60
+mynewvar ID 60
+= = 60
+a ID 60
++ PM 60
+c ID 60
+
+ Terminator 60
+
+ Terminator 61
+} } 62
+
+ Terminator 62
+$ $ 63
