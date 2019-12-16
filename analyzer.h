@@ -715,7 +715,7 @@ public:
   bool MST_class()
   {
     string temp = this->lexemes.at(this->counter).getClassName();
-    if (temp == "ID" || temp == "accessModifier" || temp == "Terminator")
+    if (temp == "accessModifier" || temp == "Terminator")
     {
       if (this->SST_class())
         if (this->MST_class())
@@ -734,57 +734,46 @@ public:
   bool SST_class()
   {
     string temp = this->lexemes.at(this->counter).getClassName();
-    if (temp == "ID")
+    if (temp == "accessModifier")
     {
-      if (this->constructor_st())
+      this->counter++;
+      if (this->func_or_dec_objdec())
         return true;
     }
     else
     {
-      if (temp == "accessModifier")
+      if (temp == "Terminator")
       {
         this->counter++;
-        if (this->func_or_dec_objdec())
-          return true;
-      }
-      else
-      {
-        if (temp == "Terminator")
-        {
-          this->counter++;
-          return true;
-        }
+        return true;
       }
     }
+
     return false;
   }
 
   bool constructor_st()
   {
     string temp = this->lexemes.at(this->counter).getClassName();
-    if (temp == "ID")
+    if (this->lexemes.at(this->counter).getClassName() == "(")
     {
       this->counter++;
-      if (this->lexemes.at(this->counter).getClassName() == "(")
-      {
-        this->counter++;
-        if (this->pl())
-          if (this->lexemes.at(this->counter).getClassName() == ")")
-          {
-            this->counter++;
-            if (this->term())
-              if (this->lexemes.at(this->counter).getClassName() == "{")
-              {
-                this->counter++;
-                if (this->body_con())
-                  if (this->lexemes.at(this->counter).getClassName() == "}")
-                  {
-                    this->counter++;
-                    return true;
-                  }
-              }
-          }
-      }
+      if (this->pl())
+        if (this->lexemes.at(this->counter).getClassName() == ")")
+        {
+          this->counter++;
+          if (this->term())
+            if (this->lexemes.at(this->counter).getClassName() == "{")
+            {
+              this->counter++;
+              if (this->body_con())
+                if (this->lexemes.at(this->counter).getClassName() == "}")
+                {
+                  this->counter++;
+                  return true;
+                }
+            }
+        }
     }
     return false;
   }
@@ -850,13 +839,32 @@ public:
         if (temp == "ID")
         {
           this->counter++;
-          if (this->obj_dec_class())
-            if (this->lexemes.at(this->counter).getClassName() == "Terminator")
+          if (this->constructor_or_obj_dec())
+            return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  bool constructor_or_obj_dec()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "(")
+    {
+      if (this->constructor_st())
+        return true;
+    }
+    else
+    {
+      if (temp == "ID")
+      {
+        if (this->obj_dec_class())
+          if (this->lexemes.at(this->counter).getClassName() == "Terminator")
             {
               this->counter++;
               return true;
             }
-        }
       }
     }
     return false;
@@ -2019,10 +2027,11 @@ public:
           this->counter++;
           if (this->OE_class())
           {
-            if (this->lexemes.at(this->counter).getClassName() == ")"){
+            if (this->lexemes.at(this->counter).getClassName() == ")")
+            {
               this->counter++;
               return true;
-              }
+            }
           }
         }
         else
@@ -2776,27 +2785,31 @@ public:
     {
       if (this->fun_st())
         return true;
-    }else{
-
-    if (this->lexemes.at(this->counter).getClassName() == "DT" || this->lexemes.at(this->counter).getClassName() == "var")
+    }
+    else
     {
-      if (this->Dec())
-        return true;
-    }else{
 
-    if (this->lexemes.at(this->counter).getClassName() == "ID")
-    {
-      this->counter++;
-      if (this->obj_dec())
+      if (this->lexemes.at(this->counter).getClassName() == "DT" || this->lexemes.at(this->counter).getClassName() == "var")
       {
-        if (this->lexemes.at(this->counter).getClassName() == "Terminator")
+        if (this->Dec())
+          return true;
+      }
+      else
+      {
+
+        if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
           this->counter++;
-          return true;
+          if (this->obj_dec())
+          {
+            if (this->lexemes.at(this->counter).getClassName() == "Terminator")
+            {
+              this->counter++;
+              return true;
+            }
+          }
         }
       }
-    }
-    }
     }
     return false;
   }
@@ -3156,7 +3169,7 @@ public:
           if (this->static_ref_or_null())
             if (this->fn_call_or_null_no_fc_end())
               if (this->assign_or_inc_dec())
-              return true;
+                return true;
         }
     }
     return false;
@@ -3734,10 +3747,11 @@ public:
           this->counter++;
           if (this->OE())
           {
-            if (this->lexemes.at(this->counter).getClassName() == ")"){
+            if (this->lexemes.at(this->counter).getClassName() == ")")
+            {
               this->counter++;
               return true;
-              }
+            }
           }
         }
         else

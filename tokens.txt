@@ -5,6 +5,7 @@ myclass ID 1
  Terminator 1
 
  Terminator 2
+public accessModifier 3
 myclass ID 3
 ( ( 3
 ) ) 3
@@ -23,6 +24,7 @@ y ID 4
 } } 6
 
  Terminator 6
+private accessModifier 7
 myclass ID 7
 ( ( 7
 ) ) 7
@@ -39,6 +41,7 @@ y ID 8
 
  Terminator 9
 } } 10
+protected accessModifier 10
 myclass ID 10
 ( ( 10
 ) ) 10
@@ -71,6 +74,7 @@ baseClass ID 16
  Terminator 16
 
  Terminator 17
+private accessModifier 18
 myclass ID 18
 ( ( 18
 ) ) 18
@@ -176,6 +180,20 @@ v ID 28
 && && 28
 4 IntConst 28
 ] ] 28
+. . 28
+fn ID 28
+( ( 28
+a ID 28
+[ [ 28
+3 IntConst 28
+] ] 28
+. . 28
+f ID 28
+. . 28
+fn ID 28
+( ( 28
+) ) 28
+) ) 28
 . . 28
 fn ID 28
 ( ( 28

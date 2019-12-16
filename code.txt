@@ -1,13 +1,13 @@
 class myclass  {
   
-  myclass(){
+  public myclass(){
     this->x = y
 
   }
-  myclass(){
+  private myclass(){
     this->x = y
 
-  }myclass(){
+  }protected myclass(){
     this->x = y
 
   }
@@ -15,7 +15,7 @@ class myclass  {
 }
 class myclass extends baseClass {
   
-  myclass(){
+  private myclass(){
     this->x = y
     b++
     
@@ -25,7 +25,7 @@ class myclass extends baseClass {
     this->x[i].funct()
     loop(int b = 1;a<a[3].fn().v!=2; b++){
       break
-      loop(int b = 1;a<b+3&&a[a+b*g<v&&4].fn()!=2; b++){
+      loop(int b = 1;a<b+3&&a[a+b*g<v&&4].fn(a[3].f.fn()).fn()!=2; b++){
       this->fn()
 
       break
