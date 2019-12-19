@@ -2,6 +2,7 @@
 #include <regex>
 #include <vector>
 #include "analyzer.h"
+#include "symbolTable.h"
 using namespace std;
 
 int main()
