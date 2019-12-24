@@ -793,30 +793,20 @@ public:
   bool func_or_dec_objdec()
   {
     string temp = this->lexemes.at(this->counter).getClassName();
-    if (temp == "function" || temp == "static" || temp == "virtual" || temp == "abstract" || temp == "DT" || temp == "var" || temp == "ID")
+    if (temp == "function" || temp == "virtual" || temp == "abstract" || temp == "DT" || temp == "var" || temp == "ID")
     {
-      if (this->static_or_null())
         if (this->f_d_o())
           return true;
+    }else{
+      if( temp == "static"){
+        this->counter++;
+        if(this->f_d_o_stat())
+          return true;
+      }
     }
     return false;
   }
 
-  bool static_or_null()
-  {
-    string temp = this->lexemes.at(this->counter).getClassName();
-    if (temp == "static")
-    {
-      this->counter++;
-      return true;
-    }
-    else
-    {
-      if (temp == "virtual" || temp == "abstract" || temp == "function" || temp == "DT" || temp == "var" || temp == "ID")
-        return true;
-    }
-    return false;
-  }
 
   bool f_d_o()
   {
@@ -846,6 +836,36 @@ public:
     }
     return false;
   }
+
+
+  bool f_d_o_stat()
+  {
+    string temp = this->lexemes.at(this->counter).getClassName();
+    if (temp == "function")
+    {
+        if (this->fun_st_class())
+          return true;
+    }
+    else
+    {
+      if (temp == "DT" || temp == "var")
+      {
+        if (this->DEC_class())
+          return true;
+      }
+      else
+      {
+        if (temp == "ID")
+        {
+          this->counter++;
+          if (this->constructor_or_obj_dec())
+            return true;
+        }
+      }
+    }
+    return false;
+  }
+
 
   bool constructor_or_obj_dec()
   {
@@ -877,10 +897,8 @@ public:
     {
       this->counter++;
       return true;
-    }
-    else
-    {
-      if (temp == "function")
+    }else{
+      if(temp == "function")
         return true;
     }
     return false;
