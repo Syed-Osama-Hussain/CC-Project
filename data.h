@@ -11,13 +11,15 @@ public:
     this->name = "";
     this->type = "";
     this->parent = "";
+    this->TM = "";
   }
 
-  Data(string name, string type, string parent)
+  Data(string name, string type, string parent, string AM)
   {
     this->name = name;
     this->type = type;
     this->parent = parent;
+    this->TM = TM;
   }
 
   Data operator=(const Data &copy)
@@ -25,6 +27,7 @@ public:
     this->name = copy.name;
     this->type = copy.type;
     this->parent = copy.parent;
+    this->TM = copy.TM;
     this->CDT = copy.CDT;
   }
 
@@ -43,6 +46,11 @@ public:
     return this->parent;
   }
 
+  string getTM()
+  {
+    return this->TM;
+  }
+
   void setName(string name)
   {
     this->name = name;
@@ -56,6 +64,11 @@ public:
   void setParent(string parent)
   {
     this->parent = parent;
+  }
+
+  void setTM(string TM)
+  {
+    this->TM = TM;
   }
 
   bool insertCDT(ClassData data)
@@ -86,7 +99,7 @@ public:
     return "none";
   }
 
-  bool lookupClassFunction(string name, string args, string &AM, string &TM)
+  string lookupClassFunction(string name, string args, string &AM, string &TM)
   {
     auto it = find_if(this->CDT.begin(), this->CDT.end(), [&name, &args](ClassData obj) { return obj.getName() == name && obj.getType() == args; });
 
@@ -95,14 +108,15 @@ public:
       auto index = std::distance(this->CDT.begin(), it);
       AM = this->CDT.at(index).getAM();
       TM = this->CDT.at(index).getTM();
-      return true;
+      return "var";
     }
-    return false;
+    return "none";
   }
 
 private:
   string name;
   string type;
   string parent;
+  string TM;
   vector<ClassData> CDT;
 };

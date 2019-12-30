@@ -32,9 +32,19 @@ public:
     file.close();
   }
 
+  void setCurrentClass(string name)
+  {
+    this->currentClass = name;
+  }
+
+  string getCurrentClass(){
+    return this->currentClass;
+  }
+
   bool insertData(Data data)
   {
-    if (this->lookupDT(data.getName()) == "none")
+    string TM = data.getTM();
+    if (this->lookupDT(data.getName(), TM) == "none")
     {
       this->DataTable.push_back(data);
       return true;
@@ -45,7 +55,7 @@ public:
     }
   }
 
-  string lookupDT(string name)
+  string lookupDT(string name, string &TM)
   {
 
     auto it = find_if(this->DataTable.begin(), this->DataTable.end(), [&name](Data obj) { return obj.getName() == name; });
@@ -53,12 +63,14 @@ public:
     if (it != this->DataTable.end())
     {
       auto index = std::distance(this->DataTable.begin(), it);
+      TM = this->DataTable.at(index).getTM();
       return this->DataTable.at(index).getType();
     }
+    TM = "";
     return "none";
   }
 
-  string lookupDT(string name, string parent)
+  string lookupDT(string name, string parent, string &TM)
   {
 
     auto it = find_if(this->DataTable.begin(), this->DataTable.end(), [&name, &parent](Data obj) { return obj.getName() == name && obj.getParent() == parent; });
@@ -66,8 +78,10 @@ public:
     if (it != this->DataTable.end())
     {
       auto index = std::distance(this->DataTable.begin(), it);
+      TM = this->DataTable.at(index).getTM();
       return this->DataTable.at(index).getType();
     }
+    TM = "";
     return "none";
   }
 
@@ -97,7 +111,7 @@ public:
 
   bool insertST(Scope data)
   {
-    if (this->lookupST(data.getName()) == "none")
+    if (!this->lookupSTInsert(data.getName()))
     {
       this->ScopeTable.push_back(data);
       return true;
@@ -107,6 +121,21 @@ public:
       return false;
     }
   }
+
+
+  bool lookupSTInsert(string name){
+    int top = this->scopeStack.top();
+
+    auto it = find_if(this->ScopeTable.begin(), this->ScopeTable.end(), [&name, &top](Scope obj) { return obj.getName() == name && obj.getScope() == top ; });
+
+      if (it != this->ScopeTable.end())
+      {
+        auto index = std::distance(this->ScopeTable.begin(), it);
+        return true;      
+      }
+      return false;
+  }
+
 
   string lookupST(string name)
   {
@@ -133,7 +162,7 @@ public:
     return "none";
   }
 
-  bool lookupFunction(string name, string args, string classname, string &AM, string &TM)
+  string lookupFunction(string name, string args, string classname, string &AM, string &TM)
   {
     if (classname == "")
     {
@@ -141,8 +170,9 @@ public:
 
       if (it != this->DataTable.end())
       {
-        return true;
+        return "var";
       }
+      return "none";
     }
     else
     {
@@ -155,11 +185,16 @@ public:
       }
     }
 
-    return false;
+    return "none";
   }
 
   string compatibilityCheck(string operand1, string operand2, string Operator)
   {
+    if (operand1 == "var" || operand2 == "var")
+    {
+      return "var";
+    }
+
     if (this->compTable.find(operand1 + operand2 + Operator) != this->compTable.end())
     {
       string result = this->compTable.find(operand1 + operand2 + Operator)->second;
@@ -177,6 +212,10 @@ public:
 
   string compatibilityCheck(string operand, string Operator)
   {
+    if (operand == "var")
+    {
+      return "var";
+    }
     if (this->compTable.find(operand + Operator) != this->compTable.end())
     {
       string result = this->compTable.find(operand + Operator)->second;
@@ -204,11 +243,13 @@ public:
   {
     if (this->scopeStack.empty())
     {
+      this->scopeNum = 0;
       this->scopeStack.push(0);
     }
     else
     {
-      this->scopeStack.push(this->scopeStack.top()++);
+      this->scopeNum++;
+      this->scopeStack.push(this->scopeNum);
     }
   }
 
@@ -222,6 +263,7 @@ public:
 
 private:
   string currentClass;
+  int scopeNum;
   vector<Data> DataTable;
   vector<Scope> ScopeTable;
   stack<int> scopeStack;

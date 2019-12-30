@@ -289,108 +289,113 @@ int DT 48
  Terminator 48
 
  Terminator 49
-loop loop 50
-( ( 50
-int DT 50
-b ID 50
-= = 50
-1 IntConst 50
-; ; 50
+string DT 50
 a ID 50
-< ROP 50
-b ID 50
-+ PM 50
-3 IntConst 50
-&& && 50
-a ID 50
-[ [ 50
-a ID 50
-+ PM 50
-b ID 50
-* MDM 50
-g ID 50
-< ROP 50
-v ID 50
-&& && 50
-4 IntConst 50
-] ] 50
-. . 50
-fn ID 50
-( ( 50
-) ) 50
-!= ROP 50
-2 IntConst 50
-; ; 50
-b ID 50
-++ inc_dec 50
-) ) 50
-{ { 50
 
  Terminator 50
-fn ID 51
-( ( 51
-) ) 51
 
  Terminator 51
 
  Terminator 52
-break executionMod 53
+loop loop 53
+( ( 53
+int DT 53
+b ID 53
+= = 53
+1 IntConst 53
+; ; 53
+a ID 53
+< ROP 53
+b ID 53
++ PM 53
+3 IntConst 53
+&& && 53
+a ID 53
+[ [ 53
+a ID 53
++ PM 53
+b ID 53
+* MDM 53
+g ID 53
+< ROP 53
+v ID 53
+&& && 53
+4 IntConst 53
+] ] 53
+. . 53
+fn ID 53
+( ( 53
+) ) 53
+!= ROP 53
+2 IntConst 53
+; ; 53
+b ID 53
+++ inc_dec 53
+) ) 53
+{ { 53
 
  Terminator 53
-} } 54
+fn ID 54
+( ( 54
+) ) 54
 
  Terminator 54
+string DT 55
+b ID 55
 
  Terminator 55
-if if 56
-( ( 56
-i ID 56
-< ROP 56
-b ID 56
-( ( 56
-z ID 56
-+ PM 56
-a ID 56
-) ) 56
-- PM 56
-9 IntConst 56
-) ) 56
 
  Terminator 56
-{ { 57
 
  Terminator 57
-myclass ID 58
-:: :: 58
-z ID 58
-. . 58
-funct ID 58
-( ( 58
-) ) 58
+break executionMod 58
 
  Terminator 58
-string DT 59
-arr ID 59
-= = 59
-new new 59
-[ [ 59
-i ID 59
-+ PM 59
-c ID 59
-] ] 59
+} } 59
 
  Terminator 59
-float DT 60
-mynewvar ID 60
-= = 60
-a ID 60
-+ PM 60
-c ID 60
 
  Terminator 60
+if if 61
+( ( 61
+i ID 61
+< ROP 61
+b ID 61
+( ( 61
+z ID 61
++ PM 61
+a ID 61
+) ) 61
+- PM 61
+9 IntConst 61
+) ) 61
 
  Terminator 61
-} } 62
+{ { 62
 
  Terminator 62
-$ $ 63
+string DT 64
+arr ID 64
+= = 64
+new new 64
+[ [ 64
+i ID 64
++ PM 64
+c ID 64
+] ] 64
+
+ Terminator 64
+float DT 65
+mynewvar ID 65
+= = 65
+a ID 65
++ PM 65
+c ID 65
+
+ Terminator 65
+
+ Terminator 66
+} } 67
+
+ Terminator 67
+$ $ 68

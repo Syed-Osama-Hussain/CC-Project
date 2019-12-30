@@ -47,15 +47,20 @@ static function name( ) {
 obj myobj = new obj(5,3)
 int #myvar = new int
 
+string a
+
+
 loop(int b = 1;a<b+3&&a[a+b*g<v&&4].fn()!=2; b++){
   fn()
+  string b
+  
 
   break
   }
 
 if(i<b(z+a)-9)
 {
-  myclass::z.funct()
+  //myclass::z.funct()
   string arr = new [i+c]
   float mynewvar = a+c
   
