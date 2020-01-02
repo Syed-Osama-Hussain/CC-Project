@@ -12,8 +12,8 @@ virtual virtual
 static static
 break executionMod
 continue executionMod
-true boolConst
-false boolConst
+true BoolConst
+false BoolConst
 abstract abstract
 if if
 else else

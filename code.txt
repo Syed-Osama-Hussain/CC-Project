@@ -1,53 +1,67 @@
-class myclass  {
-  
-  public myclass(){
-    this->x = y
+class test {
+  public function funct(){
+    return 5
 
   }
-  private myclass(){
-    this->x = y
 
-  }protected myclass(){
-    this->x = y
+  public function fn(){
 
   }
-  
 }
-class myclass extends baseClass {
+
+class baseClass {
+  protected int y
   
+  public function fn(){
+
+  }
+
+}
+
+abstract class myclass extends baseClass {
+      
+  private var z
+  private test x = new test [5]
+
   private myclass(){
     this->x = y
     b++
-    
+    this->y = x
+
   }
 
   public virtual function init(#a,b){
-    this->x[i].funct()
-    loop(int b = 1;a<a[3].fn().v!=2; b++){
-      break
-      loop(int b = 1;a<b+3&&a[a+b*g<v&&4].fn(a[3].f.fn()).fn()!=2; b++){
-      this->fn()
 
+    this->x[i].funct()
+
+    loop(int b = 1;x[3].fn()!=2; b++){
       break
+
+      if(z<=b){
+      this->fn()
       }
+
 
     }
   }
 
-  private var z
-
-
 }
 
 static function name( ) {
+  float a
+  int b
+
   return a+b
   
 }
 
-obj myobj = new obj(5,3)
-int #myvar = new int
+int a = true,b = 7
 
-string a
+myclass myobj = new myclass()
+myobj.init(a,b)
+myobj.y = b
+
+int #myvar = new int
 
 
 loop(int b = 1;a<b+3&&a[a+b*g<v&&4].fn()!=2; b++){
@@ -60,7 +74,7 @@ loop(int b = 1;a<b+3&&a[a+b*g<v&&4].fn()!=2; b++){
 
 if(i<b(z+a)-9)
 {
-  //myclass::z.funct()
+  myclass::z.funct()
   string arr = new [i+c]
   float mynewvar = a+c
   

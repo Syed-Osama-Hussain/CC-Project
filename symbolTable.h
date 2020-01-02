@@ -37,7 +37,8 @@ public:
     this->currentClass = name;
   }
 
-  string getCurrentClass(){
+  string getCurrentClass()
+  {
     return this->currentClass;
   }
 
@@ -85,6 +86,19 @@ public:
     return "none";
   }
 
+
+  string getParent(string name){
+    auto it = find_if(this->DataTable.begin(), this->DataTable.end(), [&name](Data obj) { return obj.getName() == name; });
+
+    if (it != this->DataTable.end())
+    {
+      auto index = std::distance(this->DataTable.begin(), it);
+      if(this->DataTable.at(index).getParent() != "")
+        return this->DataTable.at(index).getParent();
+    }
+    return "none";    
+  }
+
   bool insertClassData(string name, ClassData data)
   {
     auto it = find_if(this->DataTable.begin(), this->DataTable.end(), [&name](Data obj) { return obj.getName() == name; });
@@ -122,26 +136,25 @@ public:
     }
   }
 
-
-  bool lookupSTInsert(string name){
+  bool lookupSTInsert(string name)
+  {
     int top = this->scopeStack.top();
 
-    auto it = find_if(this->ScopeTable.begin(), this->ScopeTable.end(), [&name, &top](Scope obj) { return obj.getName() == name && obj.getScope() == top ; });
+    auto it = find_if(this->ScopeTable.begin(), this->ScopeTable.end(), [&name, &top](Scope obj) { return obj.getName() == name && obj.getScope() == top; });
 
-      if (it != this->ScopeTable.end())
-      {
-        auto index = std::distance(this->ScopeTable.begin(), it);
-        return true;      
-      }
-      return false;
+    if (it != this->ScopeTable.end())
+    {
+      auto index = std::distance(this->ScopeTable.begin(), it);
+      return true;
+    }
+    return false;
   }
-
 
   string lookupST(string name)
   {
     stack<int> copyStack = this->scopeStack;
 
-    while (!copyStack.empty())
+    while (copyStack.top() > 1)
     {
       auto it = find_if(this->ScopeTable.begin(), this->ScopeTable.end(), [&name, &copyStack](Scope obj) { return obj.getName() == name && obj.getScope() == copyStack.top(); });
 
@@ -157,6 +170,14 @@ public:
     {
       string AM = "", TM = "";
       return this->lookupClassData(this->currentClass, name, AM, TM);
+    }
+
+    auto it = find_if(this->ScopeTable.begin(), this->ScopeTable.end(), [&name, &copyStack](Scope obj) { return obj.getName() == name && obj.getScope() == copyStack.top(); });
+
+    if (it != this->ScopeTable.end())
+    {
+      auto index = std::distance(this->ScopeTable.begin(), it);
+      return this->ScopeTable.at(index).getType();
     }
 
     return "none";

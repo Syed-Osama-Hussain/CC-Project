@@ -1,6 +1,4 @@
 #include <iostream>
-#include <regex>
-#include <vector>
 #include "analyzer.h"
 using namespace std;
 

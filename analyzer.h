@@ -14,6 +14,7 @@ public:
   Analyzer()
   {
     this->counter = 0;
+    this->fromFunc = false;
   }
 
   void addLexeme(Lexeme &lex)
@@ -525,6 +526,17 @@ public:
     return false;
   }
 
+  bool from_fun()
+  {
+    if (this->fromFunc)
+    {
+      this->fromFunc = false;
+      return true;
+    }
+
+    return false;
+  }
+
   bool isChar(string value)
   {
     regex regChar("(\\'((\\\\n)|(\\')|(\\\\\\\\)|(\\\\r)|(\\\\t)|(\\\\b)|(\\\\f)|(\\\\v)|(\\\\0)|(\")|(.)|([0-9]{1,3}))\\')");
@@ -608,6 +620,7 @@ public:
       {
         cout << this->semErrors.at(i) << endl;
       }
+
       if (this->lexemes.at(this->counter).getClassName() == "$")
       {
         return "Valid Syntax.";
@@ -662,10 +675,11 @@ public:
               {
                 sym.setCurrentClass(N);
                 Data d(N, type, Parent, TM);
-                if(!sym.insertData(d)){
+                if (!sym.insertData(d))
+                {
                   this->semErrors.push_back("Class Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
                 }
-                
+
                 if (this->class_body())
                   return true;
               }
@@ -706,8 +720,9 @@ public:
       {
         P = this->lexemes.at(this->counter).getWord();
         string TM = "";
-        if(sym.lookupDT(P,TM) != "class"){
-          this->semErrors.push_back("Can't inherit from undeclared class at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+        if (sym.lookupDT(P, TM) != "class")
+        {
+          this->semErrors.push_back("Can't inherit from undeclared class " + P + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
         }
         this->counter++;
         return true;
@@ -784,7 +799,7 @@ public:
     return false;
   }
 
-  bool constructor_st(string N,string AM,string TM)
+  bool constructor_st(string N, string AM, string TM)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (this->lexemes.at(this->counter).getClassName() == "(")
@@ -795,12 +810,12 @@ public:
       if (this->pl(count))
         if (this->lexemes.at(this->counter).getClassName() == ")")
         {
-            ClassData d(N, to_string(count), AM, TM);
-            
-            if (!sym.insertClassData(sym.getCurrentClass(),d))
-            {
-              semErrors.push_back("Constructor Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
+          ClassData d(N, to_string(count), AM, TM);
+
+          if (!sym.insertClassData(sym.getCurrentClass(), d))
+          {
+            semErrors.push_back("Constructor Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+          }
           this->counter++;
           if (this->term())
             if (this->lexemes.at(this->counter).getClassName() == "{")
@@ -846,7 +861,7 @@ public:
         string TM = this->lexemes.at(this->counter).getWord();
 
         this->counter++;
-        if (this->f_d_o_stat(AM,TM))
+        if (this->f_d_o_stat(AM, TM))
           return true;
       }
     }
@@ -860,7 +875,7 @@ public:
     {
       string TM = "";
       if (this->VA(TM))
-        if (this->fun_st_class(AM,TM))
+        if (this->fun_st_class(AM, TM))
           return true;
     }
     else
@@ -868,7 +883,7 @@ public:
       if (temp == "DT" || temp == "var")
       {
         string TM = "";
-        if (this->DEC_class(AM,TM,false))
+        if (this->DEC_class(AM, TM, false))
           return true;
       }
       else
@@ -876,10 +891,10 @@ public:
         if (temp == "ID")
         {
           string TM = "";
-          string N =  this->lexemes.at(this->counter).getWord();
+          string N = this->lexemes.at(this->counter).getWord();
 
           this->counter++;
-          if (this->constructor_or_obj_dec(N,AM,TM))
+          if (this->constructor_or_obj_dec(N, AM, TM))
             return true;
         }
       }
@@ -887,19 +902,19 @@ public:
     return false;
   }
 
-  bool f_d_o_stat(string AM,string TM)
+  bool f_d_o_stat(string AM, string TM)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "function")
     {
-      if (this->fun_st_class(AM,TM))
+      if (this->fun_st_class(AM, TM))
         return true;
     }
     else
     {
       if (temp == "DT" || temp == "var")
       {
-        if (this->DEC_class(AM,TM,false))
+        if (this->DEC_class(AM, TM, false))
           return true;
       }
       else
@@ -909,7 +924,7 @@ public:
           string N = this->lexemes.at(this->counter).getWord();
 
           this->counter++;
-          if (this->constructor_or_obj_dec(N,AM,TM))
+          if (this->constructor_or_obj_dec(N, AM, TM))
             return true;
         }
       }
@@ -917,30 +932,30 @@ public:
     return false;
   }
 
-  bool constructor_or_obj_dec(string N,string AM,string TM)
+  bool constructor_or_obj_dec(string N, string AM, string TM)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->constructor_st(N,AM,TM))
+      if (this->constructor_st(N, AM, TM))
         return true;
     }
     else
     {
       if (temp == "ID" || temp == "#")
       {
-          string TM = "";
-          if (sym.lookupDT(N, TM) != "class")
-          {
-            this->semErrors.push_back("Undeclared Class " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+        string TM = "";
+        if (sym.lookupDT(N, TM) != "class")
+        {
+          this->semErrors.push_back("Undeclared Class " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+        }
 
-          if (TM == "abstract")
-          {
-            this->semErrors.push_back("Cannot declare object for abstract class at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+        if (TM == "abstract")
+        {
+          this->semErrors.push_back("Cannot declare object for abstract class at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+        }
 
-        if (this->obj_dec_class(N,AM,TM,false))
+        if (this->obj_dec_class(N, AM, TM, false))
           if (this->lexemes.at(this->counter).getClassName() == "Terminator")
           {
             this->counter++;
@@ -963,15 +978,16 @@ public:
     }
     else
     {
-      if (temp == "function"){
+      if (temp == "function")
+      {
         TM = "";
         return true;
-        }
+      }
     }
     return false;
   }
 
-  bool fun_st_class(string AM,string TM)
+  bool fun_st_class(string AM, string TM)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "function")
@@ -991,8 +1007,8 @@ public:
           if (this->pl(count))
           {
             ClassData d(N, to_string(count), AM, TM);
-            
-            if (!sym.insertClassData(sym.getCurrentClass(),d))
+
+            if (!sym.insertClassData(sym.getCurrentClass(), d))
             {
               semErrors.push_back("Function Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
@@ -1072,7 +1088,7 @@ public:
 
     if (temp == "DT" || temp == "var")
     {
-      if (this->DEC_class("","",true))
+      if (this->DEC_class("", "", true))
         return true;
     }
 
@@ -1133,7 +1149,7 @@ public:
 
     if (this->lexemes.at(this->counter).getClassName() == "DT" || this->lexemes.at(this->counter).getClassName() == "var")
     {
-      if (this->DEC_class("","",true))
+      if (this->DEC_class("", "", true))
         return true;
     }
     else
@@ -1144,7 +1160,7 @@ public:
         string N = this->lexemes.at(this->counter).getWord();
 
         this->counter++;
-        if (this->obj_dec_class(N,"","",true))
+        if (this->obj_dec_class(N, "", "", true))
         {
           if (this->lexemes.at(this->counter).getClassName() == "Terminator")
           {
@@ -1187,10 +1203,10 @@ public:
           bool statCheck = false;
           string T = "";
 
-
           this->counter++;
           if (this->static_ref_or_null(statCheck, T, N))
-            if (this->trail_class(N, statCheck, T)){
+            if (this->trail_class(N, statCheck, T))
+            {
 
               T = sym.compatibilityCheck(T, OP);
               if (T == "Uncompatible")
@@ -1199,7 +1215,6 @@ public:
                 this->semErrors.push_back("Invalid operator with type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
               }
               return true;
-              
             }
         }
     }
@@ -1209,18 +1224,18 @@ public:
       {
         string T = sym.getCurrentClass();
         this->counter++;
-        if (this->trail_this(T)){
-              
-              T = sym.compatibilityCheck(T, OP);
-              if (T == "Uncompatible")
-              {
+        if (this->trail_this(T))
+        {
 
-                this->semErrors.push_back("Invalid operator with type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-              }
+          T = sym.compatibilityCheck(T, OP);
+          if (T == "Uncompatible")
+          {
+
+            this->semErrors.push_back("Invalid operator with type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+          }
 
           return true;
-          
-          }
+        }
       }
     }
     return false;
@@ -1287,7 +1302,8 @@ public:
     if (temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
       string T = "";
-      if (this->CONST(T))      {
+      if (this->CONST(T))
+      {
         if (T != "int")
         {
           this->semErrors.push_back("Exit code should be int at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
@@ -1303,19 +1319,19 @@ public:
           if (this->lexemes.at(this->counter).getClassName() == "ID")
           {
             string N = this->lexemes.at(this->counter).getWord();
-            
+
             bool statCheck = false;
             string T = "";
-            
-          this->counter++;
-          if (this->static_ref_or_null(statCheck, T, N))
-            if (this->trail_class(N,statCheck,T))
-            {
+
+            this->counter++;
+            if (this->static_ref_or_null(statCheck, T, N))
+              if (this->trail_class(N, statCheck, T))
+              {
                 if (T != "int")
                 {
                   this->semErrors.push_back("Exit code should be int at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
                 }
-              return true;
+                return true;
               }
           }
       }
@@ -1325,13 +1341,14 @@ public:
         {
           string T = sym.getCurrentClass();
           this->counter++;
-          if (this->trail_this(T)){
-                if (T != "int")
-                {
-                  this->semErrors.push_back("Exit code should be int at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-                }
-            return true;
+          if (this->trail_this(T))
+          {
+            if (T != "int")
+            {
+              this->semErrors.push_back("Exit code should be int at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
+            return true;
+          }
         }
       }
     }
@@ -1406,7 +1423,7 @@ public:
       string T = "";
       if (this->DTs(T))
       {
-        if (this->p_st_or_null_p_st_class(T,"","",true))
+        if (this->p_st_or_null_p_st_class(T, "", "", true))
         {
           if (this->list_class_loop(T))
             return true;
@@ -1422,7 +1439,7 @@ public:
     if (temp == ",")
     {
       this->counter++;
-      if (this->p_st_or_null_p_st_class(T,"","",true))
+      if (this->p_st_or_null_p_st_class(T, "", "", true))
         if (this->list_class_loop(T))
           return true;
     }
@@ -1449,7 +1466,7 @@ public:
     return false;
   }
 
-  bool assign_st_this_or_ID(string & T)
+  bool assign_st_this_or_ID(string &T)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "#" || temp == "ID")
@@ -1462,7 +1479,7 @@ public:
           bool statCheck = false;
           this->counter++;
           if (this->static_ref_or_null(statCheck, T, N))
-            if (this->fn_call_class_or_null_no_fc_end(N,T,statCheck))
+            if (this->fn_call_class_or_null_no_fc_end(N, T, statCheck))
               return true;
         }
     }
@@ -1473,14 +1490,14 @@ public:
         T = sym.getCurrentClass();
         bool statCheck = false;
         this->counter++;
-        if (this->trail_this_no_fc_end(T,statCheck))
+        if (this->trail_this_no_fc_end(T, statCheck))
           return true;
       }
     }
     return false;
   }
 
-  bool trail_this_no_fc_end(string &T,bool& statCheck)
+  bool trail_this_no_fc_end(string &T, bool &statCheck)
   {
     if (this->lexemes.at(this->counter).getClassName() == "->")
     {
@@ -1490,14 +1507,14 @@ public:
         string N = this->lexemes.at(this->counter).getWord();
 
         this->counter++;
-        if (this->fn_call_class_or_null_no_fc_end(N,T,statCheck))
+        if (this->fn_call_class_or_null_no_fc_end(N, T, statCheck))
           return true;
       }
     }
     return false;
   }
 
-  bool trail_no_null_class(string N,string& T,bool& statCheck)
+  bool trail_no_null_class(string N, string &T, bool &statCheck)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -1505,44 +1522,73 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
-                if (T == "")
+        if (!from_fun())
         {
-          T = sym.lookupST(N);
-          if (T == "none")
+          if (T == "")
           {
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            T = sym.lookupST(N);
+            if (T == "none")
+            {
+              string parent = sym.getParent(sym.getCurrentClass());
+              
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+
+              if(T == "none")
+              this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            N = this->lexemes.at(this->counter).getWord();
           }
-
-          N = this->lexemes.at(this->counter).getWord();
-        }
-        else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
-
-          if (T == "none")
+          else
           {
+            string AM = "", TM = "", temp = T,parentAM="",parentTM="";
+            
+            string parent = sym.getParent(T);
+            
+            T = sym.lookupClassData(T, N, AM, TM);
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+            if (T == "none")
+            {
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          N = this->lexemes.at(this->counter).getWord();
+                if(T == "none")
+              this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+            N = this->lexemes.at(this->counter).getWord();
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            if (statCheck && TM != "static" && parentTM != "static")
+            {
+              this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
+            {
+              this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
           }
         }
         statCheck = false;
 
-
         this->counter++;
-        if (this->fn_call_class_or_null_no_fc_end(N,T,statCheck))
+        if (this->fn_call_class_or_null_no_fc_end(N, T, statCheck))
           return true;
       }
     }
@@ -1561,7 +1607,7 @@ public:
             }
 
             this->counter++;
-            if (this->trail_no_arr_no_fc_end_class(N,T,statCheck))
+            if (this->trail_no_arr_no_fc_end_class(N, T, statCheck))
               return true;
           }
       }
@@ -1569,7 +1615,7 @@ public:
     return false;
   }
 
-  bool trail_no_fc_end_class(string N,string& T,bool& statCheck)
+  bool trail_no_fc_end_class(string N, string &T, bool &statCheck)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -1577,11 +1623,26 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
-                if (T == "")
+        if (T == "")
         {
           T = sym.lookupST(N);
           if (T == "none")
           {
+              string parent = sym.getParent(sym.getCurrentClass());
+              
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+
+            if(T == "none")
             this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
@@ -1589,34 +1650,42 @@ public:
         }
         else
         {
-          string AM = "", TM = "";
+              string AM = "", TM = "",temp = T, parentAM="",parentTM="" , parent = sym.getParent(T);
+          
           T = sym.lookupClassData(T, N, AM, TM);
 
           if (T == "none")
           {
+            if(parent != "none"){
+              T = sym.lookupClassData(parent,N,parentAM,parentTM);
+              }
 
+          if(T == "none")
             this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
           N = this->lexemes.at(this->counter).getWord();
 
-          if (statCheck && TM != "static")
+          if (statCheck && TM != "static" && parentTM != "static")
           {
             this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (AM == "private" || AM == "protected")
+          if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
           {
             this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
+
+            if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
         }
         statCheck = false;
 
-              
         this->counter++;
-        if (this->fn_call_class_or_null_no_fc_end(N,T,statCheck))
+        if (this->fn_call_class_or_null_no_fc_end(N, T, statCheck))
           return true;
-      
       }
     }
     else
@@ -1634,7 +1703,7 @@ public:
             }
 
             this->counter++;
-            if (this->trail_no_arr_no_fc_end_class(N,T,statCheck))
+            if (this->trail_no_arr_no_fc_end_class(N, T, statCheck))
             {
               return true;
             }
@@ -1644,36 +1713,64 @@ public:
       {
         if (temp == "=" || temp == "inc_dec")
         {
-                    if (T == "")
+          if (T == "")
           {
             T = sym.lookupST(N);
             if (T == "none")
             {
+              string parent = sym.getParent(sym.getCurrentClass());
+              
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+
+              if(T == "none")
               this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
           }
           else
           {
-            string AM = "", TM = "";
+            string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+            
+            string parent = sym.getParent(T);
+            
             T = sym.lookupClassData(T, N, AM, TM);
 
             if (T == "none")
             {
+              if(parent != "none"){
+                T = sym.lookupClassData(parent,N,parentAM,parentTM);
+              }
 
+              if(T == "none")
               this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
 
-            if (statCheck && TM != "static")
+            if (statCheck && TM != "static" && parentTM != "static")
             {
               this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
 
-            if (AM == "private" || AM == "protected")
+            if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
             {
               this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
+                            
+            if(parentAM == "private"){
+              this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+            }
+
           }
-        statCheck = false;
+          statCheck = false;
 
           return true;
         }
@@ -1682,19 +1779,19 @@ public:
     return false;
   }
 
-  bool fn_call_class_or_null_no_fc_end(string N,string& T,bool& statCheck)
+  bool fn_call_class_or_null_no_fc_end(string N, string &T, bool &statCheck)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->fn_call_class(T,N,statCheck))
-        if (this->trail_no_null_class(N,T,statCheck))
+      if (this->fn_call_class(T, N, statCheck))
+        if (this->trail_no_null_class(N, T, statCheck))
           return true;
     }
     else
     {
       if (temp == "." || temp == "[" || temp == "=" || temp == "inc_dec")
-        if (this->trail_no_fc_end_class(N,T,statCheck))
+        if (this->trail_no_fc_end_class(N, T, statCheck))
           return true;
     }
     return false;
@@ -1708,7 +1805,7 @@ public:
       string T = "";
       if (this->OE_class(T))
       {
-        if (T != "bool" || T != "var")
+        if (T != "bool" && T != "var")
         {
           this->semErrors.push_back("Condition should be a boolean at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
         }
@@ -1718,7 +1815,7 @@ public:
           this->counter++;
           return true;
         }
-        }
+      }
     }
     else
     {
@@ -1773,11 +1870,10 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "inc_dec")
     {
       string OP = this->lexemes.at(this->counter).getWord();
-          
+
       this->counter++;
-        if (this->this_or_ID_inc_dec(OP))
-          return true;
-        
+      if (this->this_or_ID_inc_dec(OP))
+        return true;
     }
     return false;
   }
@@ -1791,14 +1887,14 @@ public:
       {
         string T = "";
         this->counter++;
-        
+
         if (this->OE_class(T))
         {
-          if (T != "bool" || T != "var")
+          if (T != "bool" && T != "var")
           {
             this->semErrors.push_back("Condition should be a boolean at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
- 
+
           if (this->lexemes.at(this->counter).getClassName() == ")")
           {
             sym.CreateScope();
@@ -1809,7 +1905,7 @@ public:
                 if (this->oelse_class())
                   return true;
           }
-          }
+        }
       }
     }
     return false;
@@ -1864,7 +1960,7 @@ public:
       if (temp == "ID")
       {
         string N = this->lexemes.at(this->counter).getWord();
-        
+
         this->counter++;
         if (this->trail_or_obj_class(N))
           if (this->lexemes.at(this->counter).getClassName() == "Terminator")
@@ -1892,12 +1988,12 @@ public:
     return false;
   }
 
-  bool trail_oe_class_or_fn(string N, bool& statCheck, string &T)
+  bool trail_oe_class_or_fn(string N, bool &statCheck, string &T)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->fn_call_class(T,N,statCheck))
+      if (this->fn_call_class(T, N, statCheck))
         return true;
     }
     else
@@ -1926,7 +2022,7 @@ public:
         this->semErrors.push_back("Can't declare object of abstract class at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
       }
 
-      if (this->obj_dec_class(N,"","",true))
+      if (this->obj_dec_class(N, "", "", true))
       {
         return true;
       }
@@ -1946,7 +2042,7 @@ public:
     return false;
   }
 
-  bool DEC_class(string AM,string TM,bool scopeFlag)
+  bool DEC_class(string AM, string TM, bool scopeFlag)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "DT" || temp == "var")
@@ -1954,9 +2050,9 @@ public:
       string T = "";
       if (this->DTs(T))
       {
-        if (this->p_st_or_null_p_st_class(T,AM,TM,scopeFlag))
+        if (this->p_st_or_null_p_st_class(T, AM, TM, scopeFlag))
         {
-          if (this->list_class(T,AM,TM,scopeFlag))
+          if (this->list_class(T, AM, TM, scopeFlag))
             return true;
         }
       }
@@ -1964,7 +2060,7 @@ public:
     return false;
   }
 
-  bool p_st_or_null_p_st_class(string T,string AM,string TM,bool scopeFlag)
+  bool p_st_or_null_p_st_class(string T, string AM, string TM, bool scopeFlag)
   {
     if (this->lexemes.at(this->counter).getClassName() == "#")
     {
@@ -1973,22 +2069,24 @@ public:
       {
         string N = this->lexemes.at(this->counter).getWord();
 
-      if(!scopeFlag)
-      {
-        ClassData D(N,T,AM,TM);
-        if(!sym.insertClassData(sym.getCurrentClass(),D)){
+        if (!scopeFlag)
+        {
+          ClassData D(N, T, AM, TM);
+          if (!sym.insertClassData(sym.getCurrentClass(), D))
+          {
 
-         this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-
+            this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+          }
         }
-      }else{
-        Scope S(N,T,sym.getScope());
-        
-        if(!sym.insertST(S)){
-         this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+        else
+        {
+          Scope S(N, T, sym.getScope());
 
+          if (!sym.insertST(S))
+          {
+            this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+          }
         }
-      }
 
         this->counter++;
         if (this->new_init_class(T))
@@ -2002,23 +2100,25 @@ public:
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
         string N = this->lexemes.at(this->counter).getWord();
-        
-        if(!scopeFlag)
-      {
-        ClassData D(N,T,AM,TM);
-        if(!sym.insertClassData(sym.getCurrentClass(),D)){
 
-         this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+        if (!scopeFlag)
+        {
+          ClassData D(N, T, AM, TM);
+          if (!sym.insertClassData(sym.getCurrentClass(), D))
+          {
 
+            this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+          }
         }
-      }else{
-        Scope S(N,T,sym.getScope());
-        
-        if(!sym.insertST(S)){
-         this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+        else
+        {
+          Scope S(N, T, sym.getScope());
 
+          if (!sym.insertST(S))
+          {
+            this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+          }
         }
-      }
         this->counter++;
         if (this->init_class(T))
         {
@@ -2034,9 +2134,9 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "=")
     {
       string OP = this->lexemes.at(this->counter).getWord();
-      
+
       this->counter++;
-      if (this->new_arr_const_class(OP,T))
+      if (this->new_arr_const_class(OP, T))
       {
         return true;
       }
@@ -2051,7 +2151,7 @@ public:
     return false;
   }
 
-  bool new_arr_const_class(string OP,string T)
+  bool new_arr_const_class(string OP, string T)
   {
     if (this->lexemes.at(this->counter).getClassName() == "new")
     {
@@ -2123,9 +2223,9 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "=")
     {
       string OP = this->lexemes.at(this->counter).getWord();
-      
+
       this->counter++;
-      if (this->new_arr_init_class(OP,T))
+      if (this->new_arr_init_class(OP, T))
       {
         return true;
       }
@@ -2140,7 +2240,7 @@ public:
     return false;
   }
 
-  bool new_arr_init_class(string OP,string T)
+  bool new_arr_init_class(string OP, string T)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "new")
@@ -2167,17 +2267,19 @@ public:
     else
     {
       string temp = this->lexemes.at(this->counter).getClassName();
-      if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "this" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst"){
+      if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "this" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
+      {
         string RT = "";
-        if (this->OE_class(RT)){
+        if (this->OE_class(RT))
+        {
           if (sym.compatibilityCheck(T, RT, OP) == "Uncompatible")
           {
 
             this->semErrors.push_back("Type " + T + " is uncompatible with type " + RT + " at line " + to_string((this->lexemes.at(this->counter).getLineNo())));
           }
           return true;
-          }
-          }
+        }
+      }
     }
     return false;
   }
@@ -2192,21 +2294,21 @@ public:
         string N = this->lexemes.at(this->counter).getWord();
         bool statCheck = false;
         this->counter++;
-        if (this->function_or_trail_class(N,statCheck,T))
+        if (this->function_or_trail_class(N, statCheck, T))
           return true;
       }
     }
     return false;
   }
 
-  bool list_class(string T,string AM,string TM,bool scopeFlag)
+  bool list_class(string T, string AM, string TM, bool scopeFlag)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ",")
     {
       this->counter++;
-      if (this->p_st_or_null_p_st_class(T,AM,TM,scopeFlag))
-        if (this->list_class(T,AM,TM,scopeFlag))
+      if (this->p_st_or_null_p_st_class(T, AM, TM, scopeFlag))
+        if (this->list_class(T, AM, TM, scopeFlag))
           return true;
     }
     else
@@ -2220,7 +2322,7 @@ public:
     return false;
   }
 
-  bool obj_dec_class(string T,string AM,string TM,bool scopeFlag)
+  bool obj_dec_class(string T, string AM, string TM, bool scopeFlag)
   {
     if (this->lexemes.at(this->counter).getClassName() == "#" || this->lexemes.at(this->counter).getClassName() == "ID")
     {
@@ -2230,26 +2332,28 @@ public:
         {
           string N = this->lexemes.at(this->counter).getWord();
 
-      if(!scopeFlag)
-      {
-        ClassData D(N,T,AM,TM);
-        if(!sym.insertClassData(sym.getCurrentClass(),D)){
+          if (!scopeFlag)
+          {
+            ClassData D(N, T, AM, TM);
+            if (!sym.insertClassData(sym.getCurrentClass(), D))
+            {
 
-         this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+          }
+          else
+          {
+            Scope S(N, T, sym.getScope());
 
-        }
-      }else{
-        Scope S(N,T,sym.getScope());
-        
-        if(!sym.insertST(S)){
-         this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-
-        }
-      }
+            if (!sym.insertST(S))
+            {
+              this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+          }
 
           this->counter++;
           if (this->init1_class(T))
-            if (this->list1_class(T,AM,TM,scopeFlag))
+            if (this->list1_class(T, AM, TM, scopeFlag))
               return true;
         }
       }
@@ -2265,7 +2369,7 @@ public:
       string RT = "";
       if (this->OE_class(RT))
       {
-         if (RT != "int")
+        if (RT != "int")
         {
           this->semErrors.push_back("Uncompatible index type at " + to_string(this->lexemes.at(this->counter).getLineNo()));
         }
@@ -2288,9 +2392,9 @@ public:
           if (this->lexemes.at(this->counter).getClassName() == "ID")
           {
             string ID = this->lexemes.at(this->counter).getWord();
-            
+
             string TM = "";
-            if (this->lexemes.at(this->counter).getWord() != T || sym.lookupDT(this->lexemes.at(this->counter).getWord(),T, TM) == "none")
+            if (this->lexemes.at(this->counter).getWord() != T && sym.lookupDT(this->lexemes.at(this->counter).getWord(), T, TM) == "none")
             {
               this->semErrors.push_back("Class has no child " + ID + " or it doesn't exist at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
@@ -2334,7 +2438,7 @@ public:
             this->semErrors.push_back("No suitable constructor exists for " + CN + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (AM == "private" || AM == "protected")
+          if ((AM == "private" || AM == "protected") && CN != sym.getCurrentClass())
           {
             this->semErrors.push_back("Can't access private or protected data at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
@@ -2348,7 +2452,7 @@ public:
       if (this->lexemes.at(this->counter).getClassName() == "[")
       {
         this->counter++;
-                string RT = "";
+        string RT = "";
         if (this->OE_class(RT))
           if (this->lexemes.at(this->counter).getClassName() == "]")
           {
@@ -2395,72 +2499,72 @@ public:
     return false;
   }
 
-  bool OE_class(string& T2)
+  bool OE_class(string &T2)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "this" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
       string T1 = "";
       if (this->AE_class(T1))
-        if (this->OE_class1(T1,T2))
+        if (this->OE_class1(T1, T2))
           return true;
     }
     return false;
   }
 
-  bool AE_class(string& T2)
+  bool AE_class(string &T2)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "this" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
       string T1 = "";
       if (this->RE_class(T1))
-        if (this->AE_class1(T1,T2))
+        if (this->AE_class1(T1, T2))
           return true;
     }
     return false;
   }
 
-  bool RE_class(string & T2)
+  bool RE_class(string &T2)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "this" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
       string T1 = "";
       if (this->PME_class(T1))
-        if (this->RE_class1(T1,T2))
+        if (this->RE_class1(T1, T2))
           return true;
     }
     return false;
   }
 
-  bool PME_class(string& T2)
+  bool PME_class(string &T2)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "this" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
       string T1 = "";
       if (this->MDME_class(T1))
-        if (this->PME_class1(T1,T2))
+        if (this->PME_class1(T1, T2))
           return true;
     }
     return false;
   }
 
-  bool MDME_class(string& T2)
+  bool MDME_class(string &T2)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "this" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
       string T1 = "";
       if (this->OPs_class(T1))
-        if (this->MDME_class1(T1,T2))
+        if (this->MDME_class1(T1, T2))
           return true;
     }
     return false;
   }
 
-  bool OPs_class(string & T)
+  bool OPs_class(string &T)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "#" || temp == "ID")
@@ -2470,13 +2574,13 @@ public:
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
           string N = this->lexemes.at(this->counter).getWord();
-          
+
           bool statCheck = false;
-          
+
           this->counter++;
           if (this->static_ref_or_null(statCheck, T, N))
           {
-            if (this->trail_or_fn_class(N,statCheck,T))
+            if (this->trail_or_fn_class(N, statCheck, T))
               return true;
           }
         }
@@ -2487,7 +2591,7 @@ public:
       if (temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst" || temp == "IntConst")
       {
         T = this->ConstType(this->lexemes.at(this->counter).getClassName());
-        
+
         this->counter++;
         return true;
       }
@@ -2510,14 +2614,14 @@ public:
           if (temp == "!")
           {
             string OP = this->lexemes.at(this->counter).getWord();
-            
+
             this->counter++;
             string RT = "";
 
             if (this->OPs_class(RT))
             {
               T = sym.compatibilityCheck(RT, OP);
-              
+
               if (T == "Uncompatible")
               {
 
@@ -2531,16 +2635,16 @@ public:
             if (temp == "inc_dec")
             {
               string OP = this->lexemes.at(this->counter).getWord();
-              
+
               this->counter++;
               if (this->this_or_ID(T))
               {
-                  T = sym.compatibilityCheck(T, OP);
-                  if (T == "Uncompatible")
-                  {
+                T = sym.compatibilityCheck(T, OP);
+                if (T == "Uncompatible")
+                {
 
-                    this->semErrors.push_back("Invalid operator with type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-                  }
+                  this->semErrors.push_back("Invalid operator with type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+                }
                 return true;
               }
             }
@@ -2561,7 +2665,7 @@ public:
     return false;
   }
 
-  bool this_or_ID(string& T)
+  bool this_or_ID(string &T)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "this")
@@ -2580,10 +2684,10 @@ public:
 
         this->counter++;
         {
-          if(this->static_ref_or_null(statCheck,T,N))
-            if (this->trail_class(N,statCheck,T))
+          if (this->static_ref_or_null(statCheck, T, N))
+            if (this->trail_class(N, statCheck, T))
               return true;
-        }      
+        }
       }
     }
     return false;
@@ -2600,32 +2704,31 @@ public:
         bool statCheck = false;
 
         this->counter++;
-        if (this->fn_call_or_null_class(N,T,statCheck))
-          if (this->trail_class(N,statCheck,T))
+        if (this->fn_call_or_null_class(N, T, statCheck))
+          if (this->trail_class(N, statCheck, T))
             return true;
       }
     }
     return false;
   }
 
-  bool trail_or_fn_class(string N,bool& statCheck,string& T)
+  bool trail_or_fn_class(string N, bool &statCheck, string &T)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->fn_call_class(T,N,statCheck))
-        if (this->trail_class(N,statCheck,T))
+      if (this->fn_call_class(T, N, statCheck))
+        if (this->trail_class(N, statCheck, T))
           return true;
     }
     else
     {
       if (temp == "[" || temp == "." || temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == ",")
       {
-        if (this->trail_class(N,statCheck,T))
+        if (this->trail_class(N, statCheck, T))
           if (this->inc_dec_or_null(T))
             return true;
       }
-
     }
     return false;
   }
@@ -2639,39 +2742,50 @@ public:
       if (this->OEs_class_or_null(count))
         if (this->lexemes.at(this->counter).getClassName() == ")")
         {
-          string AM = "", TM = "";
+          string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+          
+          string parent = sym.getParent(T);
 
           T = sym.lookupFunction(N, to_string(count), T, AM, TM);
 
           if (T == "none")
           {
+                if(parent != "none"){
+                
+                T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
+
+             if(T == "none")
             this->semErrors.push_back("Undeclared function " + N + " called at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (statCheck && TM != "static")
+          if (statCheck && TM != "static" && parentTM != "static")
           {
             this->semErrors.push_back("Function can't be called with class name at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (!statCheck && TM == "static")
+          if (!statCheck && (TM == "static" || parentTM == "static"))
           {
             this->semErrors.push_back("Static Function can't be called by object at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (AM == "private" || AM == "protected")
+          if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
           {
             this->semErrors.push_back("Can't access private or protected data at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
+          if(parentAM == "private"){
+            this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+            }
           statCheck = false;
-
+          this->fromFunc = true;
           this->counter++;
           return true;
         }
     }
     return false;
   }
-
 
   bool trail_class(string N, bool &statCheck, string &T)
   {
@@ -2681,43 +2795,71 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
-               if (T == "")
+        if (!from_fun())
         {
-          T = sym.lookupST(N);
-          if (T == "none")
+          if (T == "")
           {
-            this->semErrors.push_back(" Undeclared class object " + N + "at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            T = sym.lookupST(N);
+            if (T == "none")
+            {
+              string parent = sym.getParent(sym.getCurrentClass());
+              
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+              if(T == "none")
+              this->semErrors.push_back(" Undeclared class object " + N + "at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            N = this->lexemes.at(this->counter).getWord();
           }
-
-          N = this->lexemes.at(this->counter).getWord();
-        }
-        else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
-
-          if (T == "none")
+          else
           {
+            string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+            string parent = sym.getParent(T);
+            T = sym.lookupClassData(T, N, AM, TM);
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+            if (T == "none")
+            {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          N = this->lexemes.at(this->counter).getWord();
+              if(T == "none")
+              this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+            N = this->lexemes.at(this->counter).getWord();
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            if (statCheck && TM != "static" && parentTM != "static")
+            {
+              this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
+            {
+              this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+
           }
         }
         this->counter++;
         statCheck = false;
 
-        if (this->fn_call_or_null_class(N,  T,statCheck))
+        if (this->fn_call_or_null_class(N, T, statCheck))
           if (this->trail_class(N, statCheck, T))
             return true;
       }
@@ -2728,14 +2870,14 @@ public:
       {
         this->counter++;
         string RT = "";
-        
+
         if (this->OE_class(RT))
         {
           if (RT != "int")
           {
             this->semErrors.push_back("Uncompatible index type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
-          
+
           if (this->lexemes.at(this->counter).getClassName() == "]")
           {
             this->counter++;
@@ -2746,39 +2888,66 @@ public:
       }
       else
       {
-        if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == "," || temp == "inc_dec"){
-
-          if (T == "")
+        if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == "," || temp == "inc_dec")
+        {
+          if (!from_fun())
           {
-            T = sym.lookupST(N);
-            if (T == "none")
+            if (T == "")
             {
-              this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              T = sym.lookupST(N);
+              if (T == "none")
+              {
+                string parent = sym.getParent(sym.getCurrentClass());
+                string AM = "",TM = "";
 
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+
+              if(T == "none")
+                this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+            }
+            else
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
+
+
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
+
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass() && parent == "none")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
             }
           }
-          else
-          {
-            string AM = "", TM = "";
-            T = sym.lookupClassData(T, N, AM, TM);
-
-            if (T == "none")
-            {
-
-              this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
-
-            if (statCheck && TM != "static")
-            {
-              this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
-
-            if (AM == "private" || AM == "protected")
-            {
-              this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
-          }
-        return true;
+          return true;
         }
       }
     }
@@ -2789,7 +2958,7 @@ public:
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
-    {      
+    {
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
@@ -2798,6 +2967,20 @@ public:
           T = sym.lookupST(N);
           if (T == "none")
           {
+              string parent = sym.getParent(sym.getCurrentClass());
+              
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+            if(T == "none")
             this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
@@ -2805,30 +2988,42 @@ public:
         }
         else
         {
-          string AM = "", TM = "";
+          string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+          
+          string parent = sym.getParent(T);
+
           T = sym.lookupClassData(T, N, AM, TM);
 
           if (T == "none")
           {
+            if(parent != "none"){
+              T = sym.lookupClassData(parent,N,parentAM,parentTM);
+            }
 
+            if(T == "none")
             this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
           N = this->lexemes.at(this->counter).getWord();
 
-          if (statCheck && TM != "static")
+          if (statCheck && TM != "static" && parentTM != "static")
           {
             this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (AM == "private" || AM == "protected")
+          if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
           {
             this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+          }
+
+          if(parentAM == "private"){
+            this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
           }
         }
         statCheck = false;
         this->counter++;
-        if (this->fn_call_or_null_class(N,  T,statCheck))
+        if (this->fn_call_or_null_class(N, T, statCheck))
           if (this->trail_class(N, statCheck, T))
             return true;
       }
@@ -2842,29 +3037,56 @@ public:
           T = sym.lookupST(N);
           if (T == "none")
           {
+              string parent = sym.getParent(sym.getCurrentClass());
+              
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+              if(T == "none")
             this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
         }
         else
         {
-          string AM = "", TM = "";
+          string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+          
+          string parent = sym.getParent(T);
+
           T = sym.lookupClassData(T, N, AM, TM);
 
           if (T == "none")
           {
+            if(parent != "none"){
+              T = sym.lookupClassData(parent,N,parentAM,parentTM);
+            }
 
+            if(T == "none")
             this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (statCheck && TM != "static")
+          if (statCheck && TM != "static" && parentTM != "static")
           {
             this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (AM == "private" || AM == "protected")
+          if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
           {
             this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
+
+          if(parentAM == "private"){
+            this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+          }
+
         }
 
         return true;
@@ -2874,12 +3096,12 @@ public:
     return false;
   }
 
-  bool fn_call_or_null_class(string N,string& T,bool& statCheck)
+  bool fn_call_or_null_class(string N, string &T, bool &statCheck)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->fn_call_class(T,N,statCheck))
+      if (this->fn_call_class(T, N, statCheck))
         return true;
     }
     else
@@ -2890,7 +3112,7 @@ public:
     return false;
   }
 
-  bool trail_no_arr_no_fc_end_class(string N,string &T,bool& statCheck)
+  bool trail_no_arr_no_fc_end_class(string N, string &T, bool &statCheck)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -2898,11 +3120,25 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
-                if (T == "")
+        if (T == "")
         {
           T = sym.lookupST(N);
           if (T == "none")
           {
+              string parent = sym.getParent(sym.getCurrentClass());
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+
+              if(T == "none")
             this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
@@ -2910,31 +3146,42 @@ public:
         }
         else
         {
-          string AM = "", TM = "";
+          string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+          
+          string parent = sym.getParent(T);
           T = sym.lookupClassData(T, N, AM, TM);
 
           if (T == "none")
           {
+            if(parent != "none"){
+              T = sym.lookupClassData(parent,N,parentAM,parentTM);
+            }
 
+            if(T == "none")
             this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
           N = this->lexemes.at(this->counter).getWord();
 
-          if (statCheck && TM != "static")
+          if (statCheck && TM != "static" && parentTM != "static")
           {
             this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (AM == "private" || AM == "protected")
+          if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
           {
             this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
+
+          if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
         }
         statCheck = false;
 
         this->counter++;
-        if (this->fn_call_class_or_null_no_fc_end(N,T,statCheck))
+        if (this->fn_call_class_or_null_no_fc_end(N, T, statCheck))
           return true;
       }
     }
@@ -2942,33 +3189,61 @@ public:
     {
       if (temp == "=" || temp == "inc_dec")
       {
-                if (T == "")
+        if (T == "")
         {
           T = sym.lookupST(N);
           if (T == "none")
           {
+              string parent = sym.getParent(sym.getCurrentClass());
+              
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+
+            if(T == "none")
             this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
         }
         else
         {
-          string AM = "", TM = "";
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
           T = sym.lookupClassData(T, N, AM, TM);
 
           if (T == "none")
           {
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
+                if(T == "none")
             this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (statCheck && TM != "static")
+          if (statCheck && TM != "static" && parentTM != "static")
           {
             this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (AM == "private" || AM == "protected")
+          if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
           {
             this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+          }
+
+            if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+            }
           }
         }
         statCheck = false;
@@ -2995,7 +3270,7 @@ public:
         {
           this->semErrors.push_back("Type mismatch at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
         }
-        if (this->MDME_class1(TA,T))
+        if (this->MDME_class1(TA, T))
           return true;
       }
     }
@@ -3016,20 +3291,19 @@ public:
     if (temp == "PM")
     {
       string OP = this->lexemes.at(this->counter).getWord();
-      
+
       string TR = "";
       this->counter++;
       if (this->MDME_class(TR))
       {
         string TA = sym.compatibilityCheck(Tl, TR, OP);
-        
+
         if (TA == "Uncompatible")
         {
           this->semErrors.push_back("Type mismatch at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
         }
 
-
-        if (this->PME_class1(TA,T))
+        if (this->PME_class1(TA, T))
           return true;
       }
     }
@@ -3049,7 +3323,7 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "ROP")
     {
       string OP = this->lexemes.at(this->counter).getWord();
-      
+
       string TR = "";
       this->counter++;
       if (this->PME_class(TR))
@@ -3059,7 +3333,7 @@ public:
         {
           this->semErrors.push_back("Type mismatch at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
         }
-        if (this->RE_class1(TA,T))
+        if (this->RE_class1(TA, T))
           return true;
       }
     }
@@ -3081,17 +3355,17 @@ public:
     {
       string OP = this->lexemes.at(this->counter).getWord();
       string TR = "";
-      
+
       this->counter++;
       if (this->RE_class(TR))
       {
         string TA = sym.compatibilityCheck(Tl, TR, OP);
-        
+
         if (TA == "Uncompatible")
         {
           this->semErrors.push_back("Type mismatch at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
         }
-        if (this->AE_class1(TA,T))
+        if (this->AE_class1(TA, T))
           return true;
       }
     }
@@ -3107,23 +3381,23 @@ public:
     return false;
   }
 
-  bool OE_class1(string Tl,string& T)
+  bool OE_class1(string Tl, string &T)
   {
     if (this->lexemes.at(this->counter).getClassName() == "||")
     {
       string OP = this->lexemes.at(this->counter).getWord();
-      
+
       this->counter++;
       string TR = "";
       if (this->AE_class(TR))
       {
         string TA = sym.compatibilityCheck(Tl, TR, OP);
-        
+
         if (TA == "Uncompatible")
         {
           this->semErrors.push_back("Type mismatch at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
         }
-        if (this->OE_class1(TA,T))
+        if (this->OE_class1(TA, T))
           return true;
       }
     }
@@ -3147,11 +3421,25 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
-                if (T == "")
+        if (T == "")
         {
           T = sym.lookupST(N);
           if (T == "none")
           {
+                string parent = sym.getParent(sym.getCurrentClass());
+                string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+
+              if(T == "none")
             this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
@@ -3159,26 +3447,37 @@ public:
         }
         else
         {
-          string AM = "", TM = "";
+          string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+          
+          string parent = sym.getParent(T);
           T = sym.lookupClassData(T, N, AM, TM);
 
           if (T == "none")
           {
+            if(parent != "none"){
+              T = sym.lookupClassData(parent,N,parentAM,parentTM);
+            }
 
+            if(T == "none")
             this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
           N = this->lexemes.at(this->counter).getWord();
 
-          if (statCheck && TM != "static")
+          if (statCheck && TM != "static" && parentTM != "static")
           {
             this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (AM == "private" || AM == "protected")
+          if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
           {
             this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
+            if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+
         }
         statCheck = false;
 
@@ -3191,7 +3490,7 @@ public:
     {
       if (temp == "[")
       {
-                string RT = "";
+        string RT = "";
         this->counter++;
         if (this->OE_class(RT))
           if (this->lexemes.at(this->counter).getClassName() == "]")
@@ -3210,34 +3509,61 @@ public:
       {
         if (temp == "=" || temp == "inc_dec")
         {
-                    if (T == "")
+          if (T == "")
           {
             T = sym.lookupST(N);
             if (T == "none")
             {
+                string parent = sym.getParent(sym.getCurrentClass());
+                
+                string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+
+              if(T == "none")
               this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
           }
           else
           {
-            string AM = "", TM = "";
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+
             T = sym.lookupClassData(T, N, AM, TM);
 
             if (T == "none")
             {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
+                if(T == "none")
               this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
 
-            if (statCheck && TM != "static")
+            if (statCheck && TM != "static"  && parentTM != "static")
             {
               this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
 
-            if (AM == "private" || AM == "protected")
+            if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
             {
               this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
+
+            if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+
           }
           if (this->assign_or_inc_dec_class(T))
             return true;
@@ -3247,7 +3573,7 @@ public:
     return false;
   }
 
-  bool assign_or_inc_dec_class(string & T)
+  bool assign_or_inc_dec_class(string &T)
   {
     if (this->lexemes.at(this->counter).getClassName() == "inc_dec")
     {
@@ -3282,7 +3608,7 @@ public:
       if (this->OE_class(RT))
       {
         T = sym.compatibilityCheck(T, RT, OP);
-        
+
         if (T == "Uncompatible")
         {
 
@@ -3300,14 +3626,14 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->fn_call_class(T,N,statCheck))
-        if (this->trail_oe_null_class(N,statCheck,T))
+      if (this->fn_call_class(T, N, statCheck))
+        if (this->trail_oe_null_class(N, statCheck, T))
           return true;
     }
     else
     {
       if (temp == "." || temp == "[" || temp == "inc_dec" || temp == "=")
-        if (this->trail_oe_class(N,statCheck,T))
+        if (this->trail_oe_class(N, statCheck, T))
           return true;
     }
     return false;
@@ -3321,43 +3647,74 @@ public:
       this->counter++;
       if (temp == "ID")
       {
-                if (T == "")
+        if (!from_fun())
         {
-          T = sym.lookupST(N);
-          if (T == "none")
+          if (T == "")
           {
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            T = sym.lookupST(N);
+            if (T == "none")
+            {
+              string parent = sym.getParent(sym.getCurrentClass());
+              
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+
+              if(T == "none")
+              this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            N = this->lexemes.at(this->counter).getWord();
           }
-
-          N = this->lexemes.at(this->counter).getWord();
-        }
-        else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
-
-          if (T == "none")
+          else
           {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+            T = sym.lookupClassData(T, N, AM, TM);
 
-          N = this->lexemes.at(this->counter).getWord();
+            if (T == "none")
+            {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+                if(T == "none")
+              this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            N = this->lexemes.at(this->counter).getWord();
+
+            if (statCheck && TM != "static" && parentTM != "static")
+            {
+              this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
+            {
+              this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            
+            }
+
+              if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+
           }
         }
         statCheck = false;
 
         this->counter++;
-        if (this->function_or_trail_class(N,statCheck,T))
+        if (this->function_or_trail_class(N, statCheck, T))
           return true;
       }
     }
@@ -3366,7 +3723,7 @@ public:
       if (temp == "[")
       {
         this->counter++;
-                string RT = "";
+        string RT = "";
 
         if (this->OE_class(RT))
           if (this->lexemes.at(this->counter).getClassName() == "]")
@@ -3384,35 +3741,65 @@ public:
       {
         if (temp == "Terminator" || temp == ",")
         {
-                        if (T == "")
+          if (!from_fun())
+          {
+            if (T == "")
+            {
+              T = sym.lookupST(N);
+              if (T == "none")
               {
-                T = sym.lookupST(N);
-                if (T == "none")
-                {
-                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+                string parent = sym.getParent(sym.getCurrentClass());
+                string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
                 }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
               }
-              else
+                
+
+              if(T == "none")
+                this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+            }
+            else
+            {
+
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
+
+              if (T == "none")
               {
-                string AM = "", TM = "";
-                T = sym.lookupClassData(T, N, AM, TM);
-
-                if (T == "none")
-                {
-
-                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
                 }
 
-                if (statCheck && TM != "static")
-                {
-                  this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-                }
-
-                if (AM == "private" || AM == "protected")
-                {
-                  this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-                }
+                if(T == "none")
+                this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
               }
+
+              if (statCheck && TM != "static" && parentTM != "static")
+              {
+                this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+
+
+            }
+          }
           return true;
         }
       }
@@ -3428,11 +3815,25 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
-                if (T == "")
+        if (T == "")
         {
           T = sym.lookupST(N);
           if (T == "none")
           {
+              string parent = sym.getParent(sym.getCurrentClass());
+              
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+              if(T == "none")
             this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
@@ -3440,26 +3841,37 @@ public:
         }
         else
         {
-          string AM = "", TM = "";
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
           T = sym.lookupClassData(T, N, AM, TM);
 
           if (T == "none")
           {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
+            if(T == "none")
             this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
           N = this->lexemes.at(this->counter).getWord();
 
-          if (statCheck && TM != "static")
+          if (statCheck && TM != "static" && parentTM != "static")
           {
             this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (AM == "private" || AM == "protected")
+          if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
           {
             this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
+
+            if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+
         }
         statCheck = false;
 
@@ -3471,51 +3883,78 @@ public:
     else
     {
       this->counter;
-      if (temp == "=" || temp == "inc_dec"){
-                if (T == "")
+      if (temp == "=" || temp == "inc_dec")
+      {
+        if (T == "")
         {
           T = sym.lookupST(N);
           if (T == "none")
           {
+               string parent = sym.getParent(sym.getCurrentClass());
+              string AM = "",TM = "";
+
+              if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,AM,TM);
+                }
+
+              if(AM == "private"){
+                this->semErrors.push_back("Can't access private member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+                
+
+              if(T == "none")
             this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
         }
         else
         {
-          string AM = "", TM = "";
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+
           T = sym.lookupClassData(T, N, AM, TM);
 
           if (T == "none")
           {
+                            if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
+                if(T == "none")
             this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (statCheck && TM != "static")
+          if (statCheck && TM != "static" && parentTM != "static")
           {
             this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (AM == "private" || AM == "protected")
+          if ((AM == "private" || AM == "protected") && temp != sym.getCurrentClass())
           {
             this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
+
+            if(parentAM == "private"){
+                this->semErrors.push_back("Can't access private or member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+
         }
-      statCheck = false;
+        statCheck = false;
 
         if (this->assign_or_inc_dec_class(T))
           return true;
-          }
+      }
     }
     return false;
   }
 
-  bool list1_class(string T,string AM,string TM,bool scopeFlag)
+  bool list1_class(string T, string AM, string TM, bool scopeFlag)
   {
     if (this->lexemes.at(this->counter).getClassName() == ",")
     {
       this->counter++;
-      if (this->obj_dec_class(T,AM,TM,scopeFlag))
+      if (this->obj_dec_class(T, AM, TM, scopeFlag))
         return true;
     }
     else
@@ -3628,6 +4067,12 @@ public:
       if (this->p())
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
+          Scope S(this->lexemes.at(this->counter).getWord(), "var", sym.getScope());
+
+          if (!sym.insertST(S))
+          {
+            this->semErrors.push_back("Variable Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+          }
           count++;
           this->counter++;
           if (this->next(count))
@@ -4111,39 +4556,51 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
-        if (T == "")
+        if (!from_fun())
         {
-          T = sym.lookupST(N);
-          if (T == "none")
+          if (T == "")
           {
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            T = sym.lookupST(N);
+            if (T == "none")
+            {
+              this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            N = this->lexemes.at(this->counter).getWord();
           }
+          else
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          N = this->lexemes.at(this->counter).getWord();
-        }
-        else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private" || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }        
           }
-
-          N = this->lexemes.at(this->counter).getWord();
-
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
         statCheck = false;
 
         this->counter++;
@@ -4192,29 +4649,38 @@ public:
           N = this->lexemes.at(this->counter).getWord();
         }
         else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          N = this->lexemes.at(this->counter).getWord();
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
-        statCheck = false;
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private"  || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }        
+            statCheck = false;
 
         this->counter++;
         if (this->fn_call_or_null_no_fc_end(N, statCheck, T))
@@ -4241,7 +4707,8 @@ public:
       }
       else
       {
-        if (temp == "=" || temp == "inc_dec"){
+        if (temp == "=" || temp == "inc_dec")
+        {
 
           if (T == "")
           {
@@ -4252,30 +4719,41 @@ public:
             }
           }
           else
-          {
-            string AM = "", TM = "";
-            T = sym.lookupClassData(T, N, AM, TM);
-
-            if (T == "none")
             {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-              this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
 
-            if (statCheck && TM != "static")
-            {
-              this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-            if (AM == "private" || AM == "protected")
-            {
-              this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
-          }
-        statCheck = false;
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-        return true;
-      }
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private"  || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }          
+            statCheck = false;
+
+          return true;
+        }
       }
     }
     return false;
@@ -4307,7 +4785,7 @@ public:
       string T = "";
       if (this->OE(T))
       {
-        if (T != "bool" || T != "var")
+        if (T != "bool" && T != "var")
         {
           this->semErrors.push_back("Condition should be a boolean at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
         }
@@ -4417,7 +4895,7 @@ public:
         string T = "";
         if (this->OE(T))
         {
-          if (T != "bool" || T != "var")
+          if (T != "bool" && T != "var")
           {
             this->semErrors.push_back("Condition should be a boolean at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
@@ -4500,7 +4978,7 @@ public:
     return false;
   }
 
-  bool trail_oe_or_fn(string N, bool& statCheck, string &T)
+  bool trail_oe_or_fn(string N, bool &statCheck, string &T)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
@@ -4666,8 +5144,8 @@ public:
           {
             this->semErrors.push_back("Cannot assign type " + RT + " to type " + T + " at " + to_string((this->lexemes.at(this->counter).getLineNo())));
           }
-        return true;
-      }
+          return true;
+        }
       }
     }
     return false;
@@ -4891,7 +5369,7 @@ public:
           {
             string ID = this->lexemes.at(this->counter).getWord();
             string TM = "";
-            if (this->lexemes.at(this->counter).getWord() != CN || sym.lookupDT(this->lexemes.at(this->counter).getWord(), CN, TM) == "none")
+            if (this->lexemes.at(this->counter).getWord() != CN && sym.lookupDT(this->lexemes.at(this->counter).getWord(), CN, TM) == "none")
             {
               this->semErrors.push_back("Class has no child " + ID + " or it doesn't exist at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
@@ -5200,21 +5678,28 @@ public:
       if (this->OEs_or_null(count))
         if (this->lexemes.at(this->counter).getClassName() == ")")
         {
-          string AM = "", TM = "";
-
+          string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+          
+          string parent = sym.getParent(T);          
           T = sym.lookupFunction(N, to_string(count), T, AM, TM);
 
           if (T == "none")
           {
+              if(parent != "none"){
+                
+                T = sym.lookupClassData(parent,N,parentAM,parentTM);
+              }
+
+             if(T == "none")
             this->semErrors.push_back("Undeclared function " + N + " called at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (statCheck && TM != "static")
+          if (statCheck && TM != "static" && parentTM != "static")
           {
             this->semErrors.push_back("Function can't be called with class name at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          if (!statCheck && TM == "static")
+          if (!statCheck &&( TM == "static" || parentTM == "static"))
           {
             this->semErrors.push_back("Static Function can't be called by object at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
@@ -5224,8 +5709,13 @@ public:
             this->semErrors.push_back("Can't access private or protected data at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
 
-          statCheck = false;
+          if(parentAM == "private"  || parentAM == "protected"){
+            this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+            }
 
+          statCheck = false;
+          this->fromFunc = true;
           this->counter++;
           return true;
         }
@@ -5266,39 +5756,51 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
-        if (T == "")
+        if (!from_fun())
         {
-          T = sym.lookupST(N);
-          if (T == "none")
+          if (T == "")
           {
-            this->semErrors.push_back(" Undeclared class object " + N + "at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            T = sym.lookupST(N);
+            if (T == "none")
+            {
+              this->semErrors.push_back(" Undeclared class object " + N + "at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            N = this->lexemes.at(this->counter).getWord();
           }
+          else
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          N = this->lexemes.at(this->counter).getWord();
-        }
-        else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          N = this->lexemes.at(this->counter).getWord();
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
+              if(parentAM == "private"  || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }        
+            }
         this->counter++;
         statCheck = false;
         if (this->fn_call_or_null(N, statCheck, T))
@@ -5329,39 +5831,52 @@ public:
       }
       else
       {
-        if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == "," || temp == "inc_dec"){
-
-          if (T == "")
+        if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == "," || temp == "inc_dec")
+        {
+          if (!from_fun())
           {
-            T = sym.lookupST(N);
-            if (T == "none")
+            if (T == "")
             {
-              this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-
+              T = sym.lookupST(N);
+              if (T == "none")
+              {
+                this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
             }
-          }
-          else
-          {
-            string AM = "", TM = "";
-            T = sym.lookupClassData(T, N, AM, TM);
-
-            if (T == "none")
+            else
             {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-              this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
 
-            if (statCheck && TM != "static")
-            {
-              this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-            if (AM == "private" || AM == "protected")
-            {
-              this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private"  || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }          
             }
-          }
-        return true;
+          return true;
         }
       }
     }
@@ -5387,29 +5902,38 @@ public:
           N = this->lexemes.at(this->counter).getWord();
         }
         else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          N = this->lexemes.at(this->counter).getWord();
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
-        statCheck = false;
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private"  || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }        
+          statCheck = false;
         this->counter++;
         if (this->fn_call_or_null(N, statCheck, T))
           if (this->trail(N, statCheck, T))
@@ -5429,27 +5953,38 @@ public:
           }
         }
         else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
 
-            this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
-      return true;
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private" || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }      
+            return true;
     }
     return false;
   }
@@ -5489,29 +6024,38 @@ public:
           N = this->lexemes.at(this->counter).getWord();
         }
         else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          N = this->lexemes.at(this->counter).getWord();
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
-        statCheck = false;
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private" || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }        
+            statCheck = false;
 
         this->counter++;
         if (this->fn_call_or_null_no_fc_end(N, statCheck, T))
@@ -5531,27 +6075,38 @@ public:
           }
         }
         else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
 
-            this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
-        statCheck = false;
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private" || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }        
+            statCheck = false;
 
         return true;
       }
@@ -5771,28 +6326,37 @@ public:
           N = this->lexemes.at(this->counter).getWord();
         }
         else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          N = this->lexemes.at(this->counter).getWord();
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private" || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }
         statCheck = false;
         this->counter++;
         if (this->function_or_trail(N, statCheck, T))
@@ -5829,27 +6393,38 @@ public:
             }
           }
           else
-          {
-            string AM = "", TM = "";
-            T = sym.lookupClassData(T, N, AM, TM);
-
-            if (T == "none")
             {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-              this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
 
-            if (statCheck && TM != "static")
-            {
-              this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-            if (AM == "private" || AM == "protected")
-            {
-              this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-            }
-          }
-        if (this->assign_or_inc_dec(T))
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private" || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }        
+            if (this->assign_or_inc_dec(T))
           return true;
       }
     }
@@ -5930,39 +6505,51 @@ public:
       this->counter++;
       if (temp == "ID")
       {
-        if (T == "")
+        if (!from_fun())
         {
-          T = sym.lookupST(N);
-          if (T == "none")
+          if (T == "")
           {
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            T = sym.lookupST(N);
+            if (T == "none")
+            {
+              this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+            }
+
+            N = this->lexemes.at(this->counter).getWord();
           }
+          else
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          N = this->lexemes.at(this->counter).getWord();
-        }
-        else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          N = this->lexemes.at(this->counter).getWord();
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
+              if(parentAM == "private" || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }
+                    }
         statCheck = false;
 
         this->counter++;
@@ -5987,45 +6574,59 @@ public:
             if (this->trail_oe_no_arr(N, statCheck, T))
               return true;
           }
-          else
-          {
-            if (temp == "Terminator" || temp == ",")
-            {
-              if (T == "")
-              {
-                T = sym.lookupST(N);
-                if (T == "none")
-                {
-                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-                }
-              }
-              else
-              {
-                string AM = "", TM = "";
-                T = sym.lookupClassData(T, N, AM, TM);
-
-                if (T == "none")
-                {
-
-                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-                }
-
-                if (statCheck && TM != "static")
-                {
-                  this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-                }
-
-                if (AM == "private" || AM == "protected")
-                {
-                  this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-                }
-              }
-              return true;
-            }
-          }
       }
-      return false;
+      else
+      {
+        if (temp == "Terminator" || temp == ",")
+        {
+          if (!from_fun())
+          {
+            if (T == "")
+            {
+              T = sym.lookupST(N);
+              if (T == "none")
+              {
+                this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+            }
+            else
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
+
+
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
+
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private" || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }      
+                }
+          return true;
+        }
+      }
     }
+    return false;
   }
 
   bool trail_oe_no_arr(string N, bool &statCheck, string &T)
@@ -6047,29 +6648,38 @@ public:
           N = this->lexemes.at(this->counter).getWord();
         }
         else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
 
-            this->semErrors.push_back(" Undeclared class object " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          N = this->lexemes.at(this->counter).getWord();
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
-        statCheck = false;
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private" || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            } 
+                   statCheck = false;
 
         this->counter++;
         if (this->function_or_trail(N, statCheck, T))
@@ -6088,27 +6698,38 @@ public:
           }
         }
         else
-        {
-          string AM = "", TM = "";
-          T = sym.lookupClassData(T, N, AM, TM);
+            {
+              string AM = "", TM = "",temp = T,parentAM="",parentTM="";
+              string parent = sym.getParent(T);
+              T = sym.lookupClassData(T, N, AM, TM);
 
-          if (T == "none")
-          {
 
-            this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+              if (T == "none")
+              {
+                if(parent != "none"){
+                  T = sym.lookupClassData(parent,N,parentAM,parentTM);
+                }
 
-          if (statCheck && TM != "static")
-          {
-            this->semErrors.push_back("Called Function should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
+                if(T == "none")
+                  this->semErrors.push_back(" Undeclared variable " + N + " at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
 
-          if (AM == "private" || AM == "protected")
-          {
-            this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
-          }
-        }
-      statCheck = false;
+              if (statCheck && (TM != "static" && parentTM != "static"))
+              {
+                this->semErrors.push_back("Called Member should be static at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if (AM == "private" || AM == "protected")
+              {
+                this->semErrors.push_back("Can't access private or protected member at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+              }
+
+              if(parentAM == "private" || parentAM == "protected"){
+                this->semErrors.push_back("Can't access private or protected member of parent class "+parent+" at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
+ 
+              }
+            }
+                  statCheck = false;
 
       if (this->assign_or_inc_dec(T))
         return true;
@@ -6197,6 +6818,7 @@ public:
   }
 
 private:
+  bool fromFunc;
   std::vector<Lexeme> lexemes;
   std::vector<string> semErrors;
   Words words;

@@ -14,7 +14,7 @@ public:
     this->TM = "";
   }
 
-  Data(string name, string type, string parent, string AM)
+  Data(string name, string type, string parent, string TM)
   {
     this->name = name;
     this->type = type;
