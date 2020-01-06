@@ -1,0 +1,401 @@
+*Why did'nt we use Tree for CFG
+*Memory leak question
+*enter befor { in MST and else
+Semantic handling of dynamic return and pointers
+Custom error reporting
+
+trail no arr and trail no arr no fc end should be different
+
+string variable passed everywhere and every ICG entry is concatenated to it.
+
+CFG 
+
+CLASS:-
+-+ <class_st> → <abstract_st> class ID <extends_st> <term> <class_body>
+
+-+ <abstract_st> → abstract | Σ
+
+-+ <extends_st> → extends ID | Σ
+
+-+ <class_body> → {  <mst_class> }
+
+-+ <mst_class> → Σ | <sst_class> <mst_class> 
+
+-+ <sst_class> →   accessModifier <func_or_dec_objdec> | terminator
+
+-+ <VA> → virtual | abstract | Σ
+
+-+ <func_or_dec_objdec> → static  <f_d_o_stat> |  <f_d_o>
+
+-+ <f_d_o> → <VA> <fun_st_class> | <DEC_class>|ID <constructor_or_obj_dec>
+
+
+ <f_d_o_stat> →  <fun_st_class> |  <DEC_class>|  ID  <constructor_or_obj_dec>
+
+
+-+ <constructor_or_obj_dec> -> <obj_dec_class> terminator | <constructor_st>
+
+-+ <p> → # | Σ
+
+-+ <static_or_null> -> static | Σ 
+ 
+FUNCTION CLASS:-
+-+ <fun_st_class> → function ID (<pl>) <term> <body_fn_class>
+
+-+ <body_fn_class> → {<MST_fn_class>}
+
+-+ <MST_fn_class> → <SST_fn_class> <MST_fn_class> | Σ
+
+-+ <SST_fn_class> → <static_sts_class> | <#_or_ID_start_class>|<DEC_class> | <if_else_class> | <loop_st_class> | <return_st_class>| <exit_st_class> | <inc_dec_start_class> |terminator | executionMod
+
+
+STATIC STATEMENTS CLASS:-
+-+ <static_sts_class> → static <objdec_or_dec>
+
+-+ <objdec_or_dec> →  <DEC_class> | ID <obj_dec_class> terminator
+
+
+DECLARATION CLASS:-
+-+ <DEC_class> → <DTs> <p_st or Σ p_st class> <list_class>
+
+-+ <p_st or Σ p_st class> → # ID <new_init_class> | ID <init_class>
+
+-+ <new_init_class> → Σ | = <new_arr_const_class>
+
+-+ <new_arr_const_class> → new DT <arr_or_Σ_class> | <OE_class> 
+
+-+ <arr_or_Σ_class> → [<OE_class>] | Σ
+
+-+ <init_class> → Σ | = <new_arr_init_class>
+
+-+ <new_arr_init_class> → new [<OE_class>] | <OE_class>
+
+//-+ <this_or_ID_trail> -> this | ID <static_ref_or_null> <trail_oe_class>
+
+-+ <list_class> → , <p_st or Σ p_st class> <list_class> | terminator
+
+
+EXPRESSION CLASS:-
+-+ <OE_class> → <AE_class> <OE_class'>
+
+-+ <OE_class'> → || <AE_class> <OE_class'> | Σ
+
+-+ <AE_class> → <RE_class> <AE_class'>
+
+-+ <AE_class'> → && <RE_class> <AE_class'> | Σ
+
+-+ <RE_class> → <PME_class> <RE_class'>
+
+-+ <RE_class'> → ROP <PME_class> <RE_class'> | Σ
+
+-+ <PME_class> → <MDME_class> <PME_class'> 
+
+-+ <PME_class'> → PM <MDME_class> <PME_class'> | Σ
+
+-+ <MDME_class> → <OPs_class> <MDME_class'>
+
+-+ <MDME_class'> → MDM <OPs_class> <MDME_class'> | Σ
+
+-+ <OPs_class> → <p> ID <static_ref_or_null> <trail_or_fn_class> | <CONST> | (<OE_class>) | !<OPs_class> | incdec <this_or_ID>  | this <trail_this>
+
+-+ <this_or_ID> -> this <trail_this> | ID <trail_class>
+
+<static_ref_or_null> -> :: ID | Σ
+
+-+ <trail_this> -> -> ID <fn_call_class or Σ> <trail_class>
+
+-+ <fn_call_class orΣ> → Σ | <fn_call_class>
+
+-+ <trail_or_fn_class> → <fn_call_class> <trail_class> | <trail_class> <inc_dec orΣ> 
+
+-+ <inc_dec orΣ> → incdec | Σ
+
+-+ <trail_class> → .ID <fn_call_class or Σ> <trail_class> | [<OE_class>] <trail_no_arr_class> | Σ
+
+- <trail_no_arr_class> -> .ID <fn_call_class or Σ> <trail_class> | Σ
+
+
+OBJECT DECLARATION CLASS:-
+-+ <obj_dec_class>→ <p> ID <init1_class> <list1_class>
+
+-+ <p> → # | Σ
+
+-+ <init1_class> → [<OE_class>] | Σ | = new ID <pl_or_arr_class>
+
+-+ <pl_or_arr_class> → (<OEs_class_or_null>) | [<OE_class>]
+
+-+ <OEs_class_or_null> -> <OEs_class> | null
+
+-+ <OEs_class> → <OE_class> <next1_class>
+
+-+ <next1_class> → , <OE_class> | Σ
+
+-+ <list1_class> → , <obj_dec_class> | Σ
+
+
+FUNCTION CALL CLASS:-
+-+ <fn_call_class> → (<OEs_class_or_null>)
+
+
+STARTING WITH ID OR POINTER CLASS:-
+-+ <#_or_ID_start_class> → #ID <static_ref_or_null> <trail_oe_class_or_fn> terminator | ID <trail_or_obj_class> terminator | this <trail_oe_this> terminator
+
+-+ <trail_oe_class_or_fn> -> <trail_oe_class> | <fn_call_class>
+
+-+ <trail_or_obj_class> → <obj_dec_class> | <static_ref_or_null> <trail_oe_class_or_fn> 
+
+-+ <trail_oe_this> -> -> ID <function_or_trail_class>
+
+-+ <trail_oe_class> → .ID <function_or_trail_class> | [<OE_class>] <trail_oe_no_arr_class> | <assign_or_inc dec_class>
+
+-+ <function_or_trail_class> → <trail_oe_class> | <fn_call_class> <trail_oe_Σ_class>
+
+-+ <trail_oe_Σ_class> → .ID<function_or_trail_class> | [OE_class>] <trail_oe_no_arr_class> | null
+
+-+ <trail_oe_no_arr_class> → .ID<function_or_trail_class> | <assign_or_inc dec_class>
+
+-+ <assign_or_inc dec_class> → <assign_st_class>  | <inc_dec_class>
+
+-+ <assign_st_class> → = <OE_class>
+
+-+ <inc_dec_class> → inc_dec
+
+
+RETURN STATEMENT CLASS:-
+-+ <return_st_class> → return  <OE_class> terminator 
+ 
+
+EXIT CLASS:-
+-+ <exit_st_class> → exit <exit_st1_class> terminator
+
+-+ <exit_st1_class> → <const_or_ID_class> | (<const_or_ID_class>)
+
+-+ <const_or_ID_class> → CONST |<p> ID<trail_class> | this <trail_this>
+
+
+INC DEC START CLASS:-
+-+ <inc_dec_start_class> → inc_dec <this_or_ID_inc_dec> terminator
+
+-+ <this_or_ID_inc_dec> -> <p> ID <static_ref_or_null> <trail_class> | this <trail_this>
+
+
+IF ELSE CLASS:-
+-+ <if_else_class> → if (<OE_class>) <term> <body_fn_class> <oelse_class>
+
+-+ <oelse_class> → terminator | else <term> <body_fn_class>
+
+
+LOOP CLASS:-
+-+ <loop_st_class> → loop( <c1_class> <c2_class> <c3_class> ) <term> <body_fn_class>
+
+-+ <c1_class> → <DEC_class1> ; | <assign_st_class1> ; | ;
+
+-+ <c2_class> → <OE_class> ; | ;
+
+-+ <c3_class> → <assign_st or inc_dec_1_class> | <inc_dec_start_class1> | Σ
+
+-+ <assign_st or inc_dec_1_class> → <assign_st_this_or_ID> <assign_or_inc dec_class>
+
+
+
+
+ASSIGNMENT STATEMENT LOOP CLASS:-
+-+ <assign_st_class1> -> <assign_st_this_or_ID> <assign_st_class> 
+
+-+ <assign_st_this_or_ID> -> this <trail_this_no_fc_end> | <p> ID <static_ref_or_null> <fn_call_class or Σ_no_fc_end>
+ 
+-+ <trail_this_no_fc_end> -> -> ID <fn_call_class or Σ_no_fc_end> 
+
+-+ <trail_no_Σ_class> → .ID <fn_call_class or Σ_no_fc_end> | [<OE_class>] <trail_no_arr_class>
+
+-+ <trail_no_fc_end_class> → .ID <fn_call_class or Σ_no_fc_end>  | [<OE_class>] <trail_no_arr_class> | Σ
+
+-+ <trail_no_arr_class> → .ID <fn_call_class or Σ_no_fc_end> | Σ
+
+-+ <fn_call_class or Σ_no_fc_end> → <trail_no_fc_end_class> | <fn_call_class> <trail_no_Σ_class>
+
+
+###################################### CLASS STATEMENTS END ###############################
+
+
+START:-
+-+ <start> → "L=0,T=0" <SST_IFL2> <start ε> | <class_st> <start ε>
+
+-+ <start ε> → <start> | Σ
+
+-+ <SST_IFL> → <static_sts> | <#_or_ID_start>|<DEC> | <if_else> | <loop_st>| <return_st>| <exit_st> | <inc_dec_start> |terminator | executionMod
+
+-+ <SST_IFL2> → <SST_IFL> | <fun_st>
+
+-+ <CONST> → INT CONST | FLOAT CONST | CHAR CONST | STRING CONST | BOOL CONST
+
+
+STATIC STATEMENTS:-
+-+ <static_sts> → static <function_or_dec>
+
+-+ <function_or_dec> → <fun_st> | <DEC> | ID <obj_dec> terminator
+
+
+FUNCTION STATEMENT:-
+-+ <fun_st> → function "code += ID.VP"  ID ( '&count' <pl>) "code += "_"count "proc"" <term> 'ID.VP' <body_fn>
+
+-+ <pl> → Σ | <IDs>
+
+-+ <IDs> → <p> ID <next>
+
+-+ <next> → , <IDs> | Σ
+
+-+ <term> → terminator | Σ
+
+-+'name' <body_fn> → {<MST_IFL> "code += name "EndP" "} 
+
+-+ <MST_IFL> → <SST_IFL> <MST_IFL> | Σ
+
+
+DECLARATION:-
+-+ <DEC> → <DTs> <p_st or Σ p_st> <list>
+
+-+ <p_st or Σ p_st> → # ID 'ID,VP' <new_init> | ID 'ID.VP' <init>
+
+-+ 'name' <new_init> → Σ | = 'name' <new_arr_const>
+
+-+ 'name' <new_arr_const> → new DT 'name' <arr_or_Σ> | <OE> "code += "#" name "=" T (returned form OE)" 
+
+-+ 'name' <arr_or_Σ> → [<OE>] "code += "#" name"[" T "]" " | Σ
+
+-+ 'name' <init> → Σ | = 'name' <new_arr_init>
+
+-+ 'name' <new_arr_init> →  new [<OE>] "code += name"[" T "]" "  | <OE> "code +=  name "=" T (returned form OE)"
+
+-+ <list> → , <p_st or Σ p_st> <list> | terminator
+
+-+ <DTs> → DT | var
+
+
+OBJECT DECLARATION:-
+-+ <obj_dec> → <p> ID 'ID.VP' <init1> <list1>
+
+-+ <p> → # | Σ
+
+-+ 'name' <init1> → [<OE>] "code += name"[" T "]" "  | Σ | = new ID 'name' <pl_or_arr>
+
+-+ 'name' <pl_or_arr> → "code += name "= call" name" (<OEs_or_null>) |  [<OE>] "code += name "=" name"[" T "]" "
+
+ 'name' <OEs_or_null> -> 'name,count = 0' <OEs> | null 
+
+-+ 'name,count' <OEs> → "count++" <OE> "Temp=T" 'name,count' <next1> "code += "Param" T"
+
+-+'name,count' <next1> → , 'name,count' <OEs> | Σ
+
+-+ <list1> → , <obj_dec> | Σ
+
+
+EXPRESSION:-
+-+ 'T' <OE> → T=current <AE> <OE'>
+
+-+ <OE'> → || <AE> <OE'> | Σ
+
+-+ <AE> → <RE> <AE'>
+
+-+ <AE'> → && <RE> <AE'> | Σ
+
+-+ <RE> → <PME> <RE'>
+
+-+ <RE'> → ROP <PME> <RE'> | Σ
+
+-+ <PME> → <MDME> <PME'> 
+
+-+ <PME'> → PM <MDME> <PME'> | Σ
+
+-+ <MDME> → <OPs> <MDME'>
+
+-+ <MDME'> → MDM <OPs>  <MDME'> | Σ
+
+-+ <OPs> → <p> 'T1=ID' ID <static_ref_or_null> <trail_or_fn> | <CONST> | (<OE>) | !<OPs> | incdec ID <trail>
+
+-+ <trail_or_fn> → <fn_call> <trail> | <trail> <inc_dec orΣ>
+
+-+ <inc_dec orΣ> → incdec | Σ
+
+-+ <trail> → .ID <fn_call or Σ> <trail> | [<OE>] <trail_no_arr> | Σ (here)
+
+-+ <trail_no_arr> -> .ID <fn_call or Σ> <trail> | Σ (here)
+
+-+ <fn_call orΣ> → Σ | <fn_call>
+
+
+FUNCTION CALL:-
+-+ <fn_call> → (<OEs_or_null>)
+
+
+STARTING WITH ID OR POINTER:-
+- <# or_ID_start> → #ID <static_ref_or_null> <function_or_trail> terminator | ID <trail_or_obj> terminator 
+
+- <trail_or_obj> → <obj_dec> | <static_ref_or_null> <function_or_trail> 
+
+-+ <trail_oe> → .ID <function_or_trail> | [<OE>] <trail_oe_no_arr> | <assign_or_inc dec>
+
+-+ <function_or_trail> → <trail_oe> | <fn_call> <trail_oe_Σ>
+
+-+ <trail_oe_Σ> → .ID<function_or_trail> | [<OE>] <trail_oe_no_arr> | Σ
+
+-+ <trail_oe_no_arr> → .ID<function_or_trail> | <assign_or_inc dec>
+
+-+ <assign_or_inc dec> → <assign_st>  | <inc_dec>
+
+-+ <assign_st> → = <OE>
+
+-+ <inc_dec> → inc_dec
+
+
+RETURN STATEMENT:-
+-+ <return_st> → return  <OE> terminator 
+ 
+
+EXIT:-
+-+ <exit_st> → exit <exit_st1> terminator
+
+-+ <exit_st1> → <const_or_ID> | (<const_or_ID>)
+
+-+ <const_or_ID> → CONST | <p> ID<trail>
+
+
+INC DEC START:-
+-+ <inc_dec_start> → inc_dec <p> ID <static_ref_or_null> <trail> terminator
+
+
+IF ELSE:-
+-+ <if_else> → if (<OE>) <term>  <body_fn> <oelse>
+
+-+ <oelse> → terminator | else <term> <body_fn>
+
+
+LOOP:-
+-+ <loop_st> → loop( <c1> <c2> <c3> ) <term> <body_fn>
+
+-+ <c1> → <DEC_st1> ; | <assign_st1> ; | ;
+
+-+ <c2> → <OE> ; | ;
+
+-+ <c3> → <assign_st or inc_dec_1> | <inc_dec_start1> | Σ
+
+-+ <assign_st or inc_dec_1> → <p> ID <static_ref_or_null> <fn_call or Σ_no_fc_end> <inc_dec or assign1>
+
+-+ <inc_dec or assign1> → inc_dec | = <OE>
+
+ASSIGNMENT STATEMENT LOOP:-
+-+ <assign_st1> -> <p> ID <static_ref_or_null> <fn_call or Σ_no_fc_end> <assign_st>  
+
+-+. <trail_no_Σ> → .ID <fn_call or Σ_no_fc_end> | [<OE>] <trail_no_arr_no_fc_end>
+
+-+. <trail_no_arr_no_fc_end> → .ID <fn_call or Σ_no_fc_end> | Σ
+
+-+ <trail_no_fc_end> → .ID <fn_call or Σ_no_fc_end>  | [<OE>] <trail_no_arr_no_fc_end> | Σ
+
+-+ <fn_call or Σ_no_fc_end> → <trail_no_fc_end> | <fn_call> <trail_no_Σ>
+
+
+CONSTRUCTOR:-
+-+ <constructor_st> → (<pl>) <term> { <body con> }
+
+-+ <body con> →  <MST_fn_class> 

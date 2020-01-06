@@ -15,6 +15,9 @@ public:
   {
     this->counter = 0;
     this->fromFunc = false;
+    this->code = "";
+    this->label = 0;
+    this->Register = 0;
   }
 
   void addLexeme(Lexeme &lex)
@@ -621,6 +624,14 @@ public:
         cout << this->semErrors.at(i) << endl;
       }
 
+    ofstream file("ICG.txt");
+
+    for (int i = 0; i < this->code.length(); i++)
+    {
+      file <<this->code[i];
+    }
+      
+
       if (this->lexemes.at(this->counter).getClassName() == "$")
       {
         return "Valid Syntax.";
@@ -1195,7 +1206,8 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "#" || temp == "ID")
     {
-      if (this->p())
+      string name = "";
+      if (this->p(name))
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
           string N = this->lexemes.at(this->counter).getWord();
@@ -1204,7 +1216,8 @@ public:
           string T = "";
 
           this->counter++;
-          if (this->static_ref_or_null(statCheck, T, N))
+          string name = "";
+          if (this->static_ref_or_null(statCheck, T, N,name))
             if (this->trail_class(N, statCheck, T))
             {
 
@@ -1315,16 +1328,18 @@ public:
     {
       if (temp == "ID" || temp == "#")
       {
-        if (this->p())
+        string name = "";
+
+        if (this->p(name))
           if (this->lexemes.at(this->counter).getClassName() == "ID")
           {
             string N = this->lexemes.at(this->counter).getWord();
 
             bool statCheck = false;
             string T = "";
-
+            string name = "";
             this->counter++;
-            if (this->static_ref_or_null(statCheck, T, N))
+            if (this->static_ref_or_null(statCheck, T, N,name))
               if (this->trail_class(N, statCheck, T))
               {
                 if (T != "int")
@@ -1471,14 +1486,15 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "#" || temp == "ID")
     {
-      if (this->p())
+      string name = "";
+      if (this->p(name))
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
           string N = this->lexemes.at(this->counter).getWord();
 
           bool statCheck = false;
           this->counter++;
-          if (this->static_ref_or_null(statCheck, T, N))
+          if (this->static_ref_or_null(statCheck, T, N,name))
             if (this->fn_call_class_or_null_no_fc_end(N, T, statCheck))
               return true;
         }
@@ -1944,9 +1960,9 @@ public:
 
         string T = "";
         bool statCheck = false;
-
+        string name = "";
         this->counter++;
-        if (this->static_ref_or_null(statCheck, T, N))
+        if (this->static_ref_or_null(statCheck, T, N,name))
           if (this->trail_oe_class_or_fn(N, statCheck, T))
             if (this->lexemes.at(this->counter).getClassName() == "Terminator")
             {
@@ -2033,8 +2049,8 @@ public:
       {
         bool statCheck = false;
         string T = "";
-
-        if (this->static_ref_or_null(statCheck, T, N))
+        string name = "";
+        if (this->static_ref_or_null(statCheck, T, N,name))
           if (this->trail_oe_class_or_fn(N, statCheck, T))
             return true;
       }
@@ -2326,7 +2342,8 @@ public:
   {
     if (this->lexemes.at(this->counter).getClassName() == "#" || this->lexemes.at(this->counter).getClassName() == "ID")
     {
-      if (this->p())
+      string name = "";
+      if (this->p(name))
       {
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
@@ -2569,16 +2586,17 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "#" || temp == "ID")
     {
-      if (this->p())
+      string name = "";
+      if (this->p(name))
       {
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
           string N = this->lexemes.at(this->counter).getWord();
 
           bool statCheck = false;
-
+          string name = "";
           this->counter++;
-          if (this->static_ref_or_null(statCheck, T, N))
+          if (this->static_ref_or_null(statCheck, T, N,name))
           {
             if (this->trail_or_fn_class(N, statCheck, T))
               return true;
@@ -2681,10 +2699,10 @@ public:
       {
         string N = this->lexemes.at(this->counter).getWord();
         bool statCheck = false;
-
+        string name = "";
         this->counter++;
         {
-          if (this->static_ref_or_null(statCheck, T, N))
+          if (this->static_ref_or_null(statCheck, T, N,name))
             if (this->trail_class(N, statCheck, T))
               return true;
         }
@@ -4020,6 +4038,7 @@ public:
           int count = 0;
           if (this->pl(count))
           {
+            this->code += N + "_" + to_string(count) + " proc\n";
             Data d(N, to_string(count), "", "");
             if (!sym.insertData(d))
             {
@@ -4031,7 +4050,11 @@ public:
               this->counter++;
               if (this->term())
                 if (this->body_fn())
+                {
+                  this->code += N + " Endp\n";
                   return true;
+                
+                }            
             }
           }
         }
@@ -4064,7 +4087,8 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "#" || temp == "ID")
     {
-      if (this->p())
+      string name = "";
+      if (this->p(name))
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
           Scope S(this->lexemes.at(this->counter).getWord(), "var", sym.getScope());
@@ -4299,20 +4323,25 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "inc_dec")
     {
       string OP = this->lexemes.at(this->counter).getWord();
-
+      string name = "";
       this->counter++;
-      if (this->p())
+      if (this->p(name))
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
+          
           string N = this->lexemes.at(this->counter).getWord();
+          name += N;
 
           bool statCheck = false;
           string T = "";
 
           this->counter++;
-          if (this->static_ref_or_null(statCheck, T, N))
-            if (this->trail(N, statCheck, T))
+          if (this->static_ref_or_null(statCheck, T, N,name))
+            if (this->trail(N, statCheck, T,name))
             {
+              string regR = to_string(this->Register);
+        
+              this->code += "T" + to_string(++this->Register) + " = " + OP + " T" + regR + "\n";
 
               T = sym.compatibilityCheck(T, OP);
               if (T == "Uncompatible")
@@ -4341,6 +4370,7 @@ public:
       if (this->OE(RT))
         if (this->lexemes.at(this->counter).getClassName() == "Terminator")
         {
+          this->code += "return T" + to_string(this->Register) + "\n";
           this->counter++;
           return true;
         }
@@ -4393,8 +4423,10 @@ public:
     if (temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
       string T = "";
+      code +=  "exit " + this->lexemes.at(this->counter).getWord() + "\n";
       if (this->CONST(T))
       {
+         
         if (T != "int")
         {
           this->semErrors.push_back("Exit code should be int at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
@@ -4406,16 +4438,17 @@ public:
     {
       if (temp == "ID" || temp == "#")
       {
-        if (this->p())
+        string name = "";
+
+        if (this->p(name))
           if (this->lexemes.at(this->counter).getClassName() == "ID")
           {
             string N = this->lexemes.at(this->counter).getWord();
             bool statCheck = false;
             string T = "";
-
             this->counter++;
-            if (this->static_ref_or_null(statCheck, T, N))
-              if (this->trail(N, statCheck, T))
+            if (this->static_ref_or_null(statCheck, T, N,name))
+              if (this->trail(N, statCheck, T,name))
               {
                 if (T != "int")
                 {
@@ -4439,15 +4472,29 @@ public:
       {
         sym.CreateScope();
         this->counter++;
-        if (this->c1())
-          if (this->c2())
+        if (this->c1()){
+          
+          this->code += "L" + to_string(++this->label) + " :\n";
+
+          if (this->c2()){
+            string tempLab = to_string(this->label);
+
+            this->code += "if( T" + to_string(this->Register) + " == false) jmp L" + to_string(++this->label) + " :\n";
+
+            string tempLab2 = to_string(this->label);
+            
             if (this->c3())
               if (this->lexemes.at(this->counter).getClassName() == ")")
               {
                 this->counter++;
                 if (this->term())
-                  if (this->body_fn())
+                  if (this->body_fn()){
+                    this->code += "jmp L" + tempLab + "\n";
+                    this->code += "L" + tempLab2 + " :\n"; 
                     return true;
+                    }
+              }
+              }
               }
       }
     }
@@ -4532,15 +4579,18 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "#" || temp == "ID")
     {
-      if (this->p())
+                string name = "";
+
+      if (this->p(name))
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
           string N = this->lexemes.at(this->counter).getWord();
           bool statCheck = false;
           string T = "";
+          name += N;
           this->counter++;
-          if (this->static_ref_or_null(statCheck, T, N))
-            if (this->fn_call_or_null_no_fc_end(N, statCheck, T))
+          if (this->static_ref_or_null(statCheck, T, N,name))
+            if (this->fn_call_or_null_no_fc_end(N, statCheck, T,name))
               if (this->assign_st(T))
                 return true;
         }
@@ -4548,7 +4598,7 @@ public:
     return false;
   }
 
-  bool trail_no_null(string N, bool &statCheck, string &T)
+  bool trail_no_null(string N, bool &statCheck, string &T,string &name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -4556,6 +4606,8 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
+        name += "." + this->lexemes.at(this->counter).getWord();
+
         if (!from_fun())
         {
           if (T == "")
@@ -4604,7 +4656,7 @@ public:
         statCheck = false;
 
         this->counter++;
-        if (this->fn_call_or_null_no_fc_end(N, statCheck, T))
+        if (this->fn_call_or_null_no_fc_end(N, statCheck, T,name))
           return true;
       }
     }
@@ -4617,12 +4669,14 @@ public:
         if (this->OE(RT))
           if (this->lexemes.at(this->counter).getClassName() == "]")
           {
+            name += "[T" + to_string(this->Register) + "]"; 
+            
             if (RT != "int")
             {
               this->semErrors.push_back(" Uncompatible index type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
             this->counter++;
-            if (this->trail_no_arr_no_fc_end(N, statCheck, T))
+            if (this->trail_no_arr_no_fc_end(N, statCheck, T,name))
               return true;
           }
       }
@@ -4630,7 +4684,7 @@ public:
     return false;
   }
 
-  bool trail_no_fc_end(string N, bool &statCheck, string &T)
+  bool trail_no_fc_end(string N, bool &statCheck, string &T,string & name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -4638,6 +4692,8 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
+        name += "." + this->lexemes.at(this->counter).getWord();
+
         if (T == "")
         {
           T = sym.lookupST(N);
@@ -4683,7 +4739,7 @@ public:
             statCheck = false;
 
         this->counter++;
-        if (this->fn_call_or_null_no_fc_end(N, statCheck, T))
+        if (this->fn_call_or_null_no_fc_end(N, statCheck, T,name))
           return true;
       }
     }
@@ -4696,12 +4752,14 @@ public:
         if (this->OE(RT))
           if (this->lexemes.at(this->counter).getClassName() == "]")
           {
+            name += "[T" + to_string(this->Register) + "]"; 
+            
             if (RT != "int")
             {
               this->semErrors.push_back(" Uncompatible index type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
             this->counter++;
-            if (this->trail_no_arr_no_fc_end(N, statCheck, T))
+            if (this->trail_no_arr_no_fc_end(N, statCheck, T,name))
               return true;
           }
       }
@@ -4709,7 +4767,8 @@ public:
       {
         if (temp == "=" || temp == "inc_dec")
         {
-
+            this->Register++;
+           this->code += "T" + to_string(this->Register) + " = "+ name +"\n";
           if (T == "")
           {
             T = sym.lookupST(N);
@@ -4759,19 +4818,19 @@ public:
     return false;
   }
 
-  bool fn_call_or_null_no_fc_end(string N, bool &statCheck, string &T)
+  bool fn_call_or_null_no_fc_end(string N, bool &statCheck, string &T,string & name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->fn_call(T, N, statCheck))
-        if (this->trail_no_null(N, statCheck, T))
+      if (this->fn_call(T, N, statCheck,name))
+        if (this->trail_no_null(N, statCheck, T,name))
           return true;
     }
     else
     {
       if (temp == "=" || temp == "." || temp == "[" || temp == "inc_dec")
-        if (this->trail_no_fc_end(N, statCheck, T))
+        if (this->trail_no_fc_end(N, statCheck, T,name))
           return true;
     }
     return false;
@@ -4836,16 +4895,18 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "#" || temp == "ID")
     {
-      if (this->p())
+      string name = "";
+      if (this->p(name))
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
           string N = this->lexemes.at(this->counter).getWord();
 
           bool statCheck = false;
           string T = "";
+           name += N ;
           this->counter++;
-          if (this->static_ref_or_null(statCheck, T, N))
-            if (this->fn_call_or_null_no_fc_end(N, statCheck, T))
+          if (this->static_ref_or_null(statCheck, T, N,name))
+            if (this->fn_call_or_null_no_fc_end(N, statCheck, T,name))
               if (this->assign_or_inc_dec(T))
                 return true;
         }
@@ -4858,20 +4919,25 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "inc_dec")
     {
       string OP = this->lexemes.at(this->counter).getWord();
+                string name = "";
 
       this->counter++;
-      if (this->p())
+      if (this->p(name))
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
-          string N = this->lexemes.at(this->counter).getWord();
 
+          string N = this->lexemes.at(this->counter).getWord();
+          name += N;
           bool statCheck = false;
           string T = "";
-
           this->counter++;
-          if (this->static_ref_or_null(statCheck, T, N))
-            if (this->trail(N, statCheck, T))
+          if (this->static_ref_or_null(statCheck, T, N,name))
+            if (this->trail(N, statCheck, T,name))
             {
+              string regR = to_string(this->Register);
+        
+              this->code += "T" + to_string(++this->Register) + " = " + OP + " T" + regR + "\n";
+              
               T = sym.compatibilityCheck(T, OP);
               if (T == "Uncompatible")
               {
@@ -4895,6 +4961,7 @@ public:
         string T = "";
         if (this->OE(T))
         {
+          this->code += "if( T" + to_string(this->Register) + " == false) jmp L" + to_string(++this->label) + "\n"; 
           if (T != "bool" && T != "var")
           {
             this->semErrors.push_back("Condition should be a boolean at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
@@ -4903,11 +4970,11 @@ public:
           if (this->lexemes.at(this->counter).getClassName() == ")")
           {
             sym.CreateScope();
-
+            string temp = to_string(this->label);
             this->counter++;
             if (this->term())
               if (this->body_fn())
-                if (this->oelse())
+                if (this->oelse(temp))
                   return true;
           }
         }
@@ -4916,10 +4983,11 @@ public:
     return false;
   }
 
-  bool oelse()
+  bool oelse(string lab)
   {
     if (this->lexemes.at(this->counter).getClassName() == "Terminator")
     {
+      this->code += "L" + lab + " :\n"; 
       this->counter++;
       return true;
     }
@@ -4927,11 +4995,17 @@ public:
     {
       if (this->lexemes.at(this->counter).getClassName() == "else")
       {
+        this->code += "jmp L" + to_string(++this->label) + "\n";
+        this->code += "L" + lab + " :\n"; 
         sym.CreateScope();
         this->counter++;
         if (this->term())
           if (this->body_fn())
+          {
+            code += "L" + to_string(this->label) + " :\n";
             return true;
+            
+            }
       }
     }
     return false;
@@ -4945,14 +5019,14 @@ public:
       this->counter++;
       if (temp == "ID")
       {
-        string N = this->lexemes.at(this->counter).getWord();
-
+        string N = this->lexemes.at(this->counter).getWord();  
         string T = "";
         bool statCheck = false;
-
+        string name = "";
+        name += "#" + N;
         this->counter++;
-        if (this->static_ref_or_null(statCheck, T, N))
-          if (this->trail_oe_or_fn(N, statCheck, T))
+        if (this->static_ref_or_null(statCheck, T, N,name))
+          if (this->trail_oe_or_fn(N, statCheck, T,name))
             if (this->lexemes.at(this->counter).getClassName() == "Terminator")
             {
               this->counter++;
@@ -4965,9 +5039,9 @@ public:
       if (temp == "ID")
       {
         string N = this->lexemes.at(this->counter).getWord();
-
+        string name = "" + N;
         this->counter++;
-        if (this->trail_or_obj(N))
+        if (this->trail_or_obj(name,N))
           if (this->lexemes.at(this->counter).getClassName() == "Terminator")
           {
             this->counter++;
@@ -4978,24 +5052,24 @@ public:
     return false;
   }
 
-  bool trail_oe_or_fn(string N, bool &statCheck, string &T)
+  bool trail_oe_or_fn(string N, bool &statCheck, string &T,string & name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->fn_call(T, N, statCheck))
+      if (this->fn_call(T, N, statCheck,name))
         return true;
     }
     else
     {
       if (temp == "." || temp == "[" || temp == "=" || temp == "inc_dec")
-        if (this->trail_oe(N, statCheck, T))
+        if (this->trail_oe(N, statCheck, T,name))
           return true;
     }
     return false;
   }
 
-  bool trail_or_obj(string N)
+  bool trail_or_obj(string& name, string N)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "#" || temp == "ID")
@@ -5023,9 +5097,8 @@ public:
       {
         bool statCheck = false;
         string T = "";
-
-        if (this->static_ref_or_null(statCheck, T, N))
-          if (this->trail_oe_or_fn(N, statCheck, T))
+        if (this->static_ref_or_null(statCheck, T, N,name))
+          if (this->trail_oe_or_fn(N, statCheck, T,name))
             return true;
       }
     }
@@ -5057,7 +5130,9 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
-        Scope S(this->lexemes.at(this->counter).getWord(), T, sym.getScope());
+        string N = this->lexemes.at(this->counter).getWord();
+
+        Scope S(N, T, sym.getScope());
 
         if (!sym.insertST(S))
         {
@@ -5065,7 +5140,7 @@ public:
         }
 
         this->counter++;
-        if (this->new_init(T))
+        if (this->new_init(N,T))
         {
           return true;
         }
@@ -5075,7 +5150,9 @@ public:
     {
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
-        Scope S(this->lexemes.at(this->counter).getWord(), T, sym.getScope());
+        string N = this->lexemes.at(this->counter).getWord();
+
+        Scope S(N, T, sym.getScope());
 
         if (!sym.insertST(S))
         {
@@ -5083,7 +5160,7 @@ public:
         }
 
         this->counter++;
-        if (this->init(T))
+        if (this->init(N,T))
         {
           return true;
         }
@@ -5092,13 +5169,13 @@ public:
     return false;
   }
 
-  bool new_init(string T)
+  bool new_init(string name,string T)
   {
     if (this->lexemes.at(this->counter).getClassName() == "=")
     {
       string OP = this->lexemes.at(this->counter).getWord();
       this->counter++;
-      if (this->new_arr_const(OP, T))
+      if (this->new_arr_const(name,OP, T))
       {
         return true;
       }
@@ -5113,7 +5190,7 @@ public:
     return false;
   }
 
-  bool new_arr_const(string OP, string T)
+  bool new_arr_const(string name,string OP, string T)
   {
     if (this->lexemes.at(this->counter).getClassName() == "new")
     {
@@ -5126,7 +5203,7 @@ public:
         }
 
         this->counter++;
-        if (this->arr_or_null())
+        if (this->arr_or_null(name))
         {
           return true;
         }
@@ -5140,6 +5217,8 @@ public:
         string RT = "";
         if (this->OE(RT))
         {
+          this->code += "# " + name + " = T" + to_string(this->Register) + "\n";
+
           if (sym.compatibilityCheck(T, RT, OP) == "Uncompatible")
           {
             this->semErrors.push_back("Cannot assign type " + RT + " to type " + T + " at " + to_string((this->lexemes.at(this->counter).getLineNo())));
@@ -5151,7 +5230,7 @@ public:
     return false;
   }
 
-  bool arr_or_null()
+  bool arr_or_null(string name)
   {
     if (this->lexemes.at(this->counter).getClassName() == "[")
     {
@@ -5180,14 +5259,14 @@ public:
     return false;
   }
 
-  bool init(string T)
+  bool init(string name,string T)
   {
     if (this->lexemes.at(this->counter).getClassName() == "=")
     {
       string OP = this->lexemes.at(this->counter).getWord();
 
       this->counter++;
-      if (this->new_arr_init(OP, T))
+      if (this->new_arr_init(name,OP, T))
       {
         return true;
       }
@@ -5232,7 +5311,7 @@ public:
     return false;
   }
 
-  bool new_arr_init(string OP, string T)
+  bool new_arr_init(string name,string OP, string T)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "new")
@@ -5264,6 +5343,7 @@ public:
         string RT = "";
         if (this->OE(RT))
         {
+          this->code += name + " = T" + to_string(this->Register) + "\n"; 
           if (sym.compatibilityCheck(T, RT, OP) == "Uncompatible")
           {
 
@@ -5301,10 +5381,13 @@ public:
   {
     if (this->lexemes.at(this->counter).getClassName() == "#" || this->lexemes.at(this->counter).getClassName() == "ID")
     {
-      if (this->p())
+      string name = "";
+      if (this->p(name))
       {
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
+          string N = this->lexemes.at(this->counter).getWord();
+          name += N;
           Scope S(this->lexemes.at(this->counter).getWord(), CN, sym.getScope());
 
           if (!sym.insertST(S))
@@ -5312,7 +5395,7 @@ public:
             this->semErrors.push_back("Object Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
           }
           this->counter++;
-          if (this->init1(CN))
+          if (this->init1(name,CN))
             if (this->list1(CN))
               return true;
         }
@@ -5321,10 +5404,11 @@ public:
     return false;
   }
 
-  bool p()
+  bool p(string & name)
   {
     if (this->lexemes.at(this->counter).getClassName() == "#")
     {
+      name += "#";
       this->counter++;
       return true;
     }
@@ -5338,7 +5422,7 @@ public:
     return false;
   }
 
-  bool init1(string CN)
+  bool init1(string name,string CN)
   {
     if (this->lexemes.at(this->counter).getClassName() == "[")
     {
@@ -5380,7 +5464,7 @@ public:
             }
 
             this->counter++;
-            if (this->pl_or_arr(CN))
+            if (this->pl_or_arr(name,CN))
             {
               return true;
             }
@@ -5398,7 +5482,7 @@ public:
     return false;
   }
 
-  bool pl_or_arr(string CN)
+  bool pl_or_arr(string name,string CN)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
@@ -5408,6 +5492,8 @@ public:
       if (this->OEs_or_null(count))
         if (this->lexemes.at(this->counter).getClassName() == ")")
         {
+          this->code += name + " = Call " + CN + "_" + CN + "," + to_string(count) + "\n";
+           
           string AM = "", TM = "";
           if (sym.lookupFunction(CN, to_string(count), CN, AM, TM) == "none")
           {
@@ -5464,12 +5550,16 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "ID" || temp == "(" || temp == "!" || temp == "inc_dec" || temp == "#" || temp == "IntConst" || temp == "StringConst" || temp == "CharConst" || temp == "FloatConst" || temp == "BoolConst")
     {
+
       string RT = "";
       if (this->OE(RT))
       {
+      string var = to_string(this->Register);
         count++;
-        if (this->next1(count))
+        if (this->next1(count)){
+          this->code += "Param T" + var + "\n";
           return true;
+        }      
       }
     }
     return false;
@@ -5550,17 +5640,21 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "#" || temp == "ID")
     {
-      if (this->p())
+      string name = "";
+      if (this->p(name))
       {
         if (this->lexemes.at(this->counter).getClassName() == "ID")
         {
+
           string N = this->lexemes.at(this->counter).getWord();
           this->counter++;
           bool statCheck = false;
 
-          if (this->static_ref_or_null(statCheck, T, N))
+          name += N;           
+
+          if (this->static_ref_or_null(statCheck, T, N,name))
           {
-            if (this->trail_or_fn(N, statCheck, T))
+            if (this->trail_or_fn(N, statCheck, T,name))
               return true;
           }
         }
@@ -5572,7 +5666,10 @@ public:
       {
 
         T = this->ConstType(this->lexemes.at(this->counter).getClassName());
-
+        this->Register++;
+          
+        this->code += "T" + to_string(this->Register) + " = "+ this->lexemes.at(this->counter).getWord()+"\n";
+        
         this->counter++;
         return true;
       }
@@ -5595,6 +5692,7 @@ public:
         {
           if (temp == "!")
           {
+            
             string OP = this->lexemes.at(this->counter).getWord();
 
             this->counter++;
@@ -5602,6 +5700,10 @@ public:
 
             if (this->OPs(RT))
             {
+              string regR = to_string(this->Register);
+        
+              this->code += "T" + to_string(++this->Register) + " = " + OP + " T" + regR + "\n";
+              
               T = sym.compatibilityCheck(RT, OP);
               if (T == "Uncompatible")
               {
@@ -5616,18 +5718,21 @@ public:
             if (temp == "inc_dec")
             {
               string OP = this->lexemes.at(this->counter).getWord();
-
               this->counter++;
               if (this->lexemes.at(this->counter).getClassName() == "ID")
               {
                 bool statCheck = false;
                 string N = this->lexemes.at(this->counter).getWord();
-
+                string name = "" + N;
                 this->counter++;
-                if (this->static_ref_or_null(statCheck, T, N))
+                if (this->static_ref_or_null(statCheck, T, N,name))
                 {
-                  if (this->trail(N, statCheck, T))
+                  if (this->trail(N, statCheck, T,name))
                   {
+                    string regR = to_string(this->Register);
+        
+                    this->code += "T" + to_string(++this->Register) + " = " + OP + " T" + regR + "\n";
+                    
                     T = sym.compatibilityCheck(T, OP);
                     if (T == "Uncompatible")
                     {
@@ -5647,20 +5752,20 @@ public:
     return false;
   }
 
-  bool trail_or_fn(string N, bool statCheck, string &T)
+  bool trail_or_fn(string N, bool statCheck, string &T,string & name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->fn_call(T, N, statCheck))
-        if (this->trail(N, statCheck, T))
+      if (this->fn_call(T, N, statCheck,name))
+        if (this->trail(N, statCheck, T,name))
           return true;
     }
     else
     {
       if (temp == "[" || temp == "." || temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == ",")
       {
-        if (this->trail(N, statCheck, T))
+        if (this->trail(N, statCheck, T,name))
           if (this->inc_dec_or_null(T))
             return true;
       }
@@ -5668,7 +5773,7 @@ public:
     return false;
   }
 
-  bool fn_call(string &T, string N, bool &statCheck)
+  bool fn_call(string &T, string N, bool &statCheck,string &name)
   {
     if (this->lexemes.at(this->counter).getClassName() == "(")
     {
@@ -5678,6 +5783,10 @@ public:
       if (this->OEs_or_null(count))
         if (this->lexemes.at(this->counter).getClassName() == ")")
         {
+          this->code += "T" + to_string(++this->Register) + " = Call " + name + + "," + to_string(count) + "\n";
+
+          name = "T" + to_string(this->Register);
+
           string AM = "", TM = "",temp = T,parentAM="",parentTM="";
           
           string parent = sym.getParent(T);          
@@ -5729,11 +5838,15 @@ public:
     if (temp == "inc_dec")
     {
       string OP = this->lexemes.at(this->counter).getWord();
+      
+      string regR = to_string(this->Register);
+        
+      this->code += "T" + to_string(++this->Register) + " = " + " T" + regR +  OP + "\n";
 
       T = sym.compatibilityCheck(T, OP);
       if (T == "Uncompatible")
       {
-
+        
         this->semErrors.push_back("Invalid operator with type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
       }
 
@@ -5748,7 +5861,7 @@ public:
     return false;
   }
 
-  bool trail(string N, bool &statCheck, string &T)
+  bool trail(string N, bool &statCheck, string &T,string & name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -5756,6 +5869,8 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
+        name += "." + this->lexemes.at(this->counter).getWord();
+
         if (!from_fun())
         {
           if (T == "")
@@ -5803,8 +5918,8 @@ public:
             }
         this->counter++;
         statCheck = false;
-        if (this->fn_call_or_null(N, statCheck, T))
-          if (this->trail(N, statCheck, T))
+        if (this->fn_call_or_null(N, statCheck, T,name))
+          if (this->trail(N, statCheck, T,name))
             return true;
       }
     }
@@ -5816,6 +5931,7 @@ public:
         string RT = "";
         if (this->OE(RT))
         {
+          name += "[T" + to_string(this->Register) + "]"; 
           if (RT != "int")
           {
             this->semErrors.push_back("Uncompatible index type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
@@ -5824,7 +5940,7 @@ public:
           if (this->lexemes.at(this->counter).getClassName() == "]")
           {
             this->counter++;
-            if (this->trail_no_arr(N, statCheck, T))
+            if (this->trail_no_arr(N, statCheck, T,name))
               return true;
           }
         }
@@ -5833,6 +5949,10 @@ public:
       {
         if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == "," || temp == "inc_dec")
         {
+           this->Register++;
+           this->code += "T" + to_string(this->Register) + " = "+ name +"\n";
+
+
           if (!from_fun())
           {
             if (T == "")
@@ -5883,7 +6003,7 @@ public:
     return false;
   }
 
-  bool trail_no_arr(string N, bool statCheck, string &T)
+  bool trail_no_arr(string N, bool statCheck, string &T,string & name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -5891,6 +6011,7 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
+        name += "." + this->lexemes.at(this->counter).getWord();
         if (T == "")
         {
           T = sym.lookupST(N);
@@ -5935,14 +6056,17 @@ public:
             }        
           statCheck = false;
         this->counter++;
-        if (this->fn_call_or_null(N, statCheck, T))
-          if (this->trail(N, statCheck, T))
+        if (this->fn_call_or_null(N, statCheck, T,name))
+          if (this->trail(N, statCheck, T,name))
             return true;
       }
     }
     else
     {
-      if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == "," || temp == "inc_dec")
+      if (temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == "," || temp == "inc_dec"){
+           
+           this->Register++;
+           this->code += "T" + to_string(this->Register) + " = "+ name +"\n";
 
         if (T == "")
         {
@@ -5985,16 +6109,17 @@ public:
               }
             }      
             return true;
+            }
     }
     return false;
   }
 
-  bool fn_call_or_null(string N, bool statCheck, string &T)
+  bool fn_call_or_null(string N, bool statCheck, string &T,string & name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->fn_call(T, N, statCheck))
+      if (this->fn_call(T, N, statCheck,name))
         return true;
     }
     else
@@ -6005,7 +6130,7 @@ public:
     return false;
   }
 
-  bool trail_no_arr_no_fc_end(string N, bool &statCheck, string &T)
+  bool trail_no_arr_no_fc_end(string N, bool &statCheck, string &T,string & name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -6013,6 +6138,8 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
+        name += "." + this->lexemes.at(this->counter).getWord();
+
         if (T == "")
         {
           T = sym.lookupST(N);
@@ -6058,7 +6185,7 @@ public:
             statCheck = false;
 
         this->counter++;
-        if (this->fn_call_or_null_no_fc_end(N, statCheck, T))
+        if (this->fn_call_or_null_no_fc_end(N, statCheck, T,name))
           return true;
       }
     }
@@ -6066,6 +6193,8 @@ public:
     {
       if (temp == "=" || temp == "inc_dec")
       {
+                   this->Register++;
+           this->code += "T" + to_string(this->Register) + " = "+ name +"\n";
         if (T == "")
         {
           T = sym.lookupST(N);
@@ -6119,12 +6248,18 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "MDM")
     {
+      string reg = to_string(this->Register);
       string OP = this->lexemes.at(this->counter).getWord();
 
       this->counter++;
+
       string TR = "";
       if (this->OPs(TR))
       {
+        string regR = to_string(this->Register);
+        
+        this->code += "T" + to_string(++this->Register) + " = T" + reg + " " + OP + " T" + regR + "\n";
+        
         string TA = sym.compatibilityCheck(Tl, TR, OP);
         if (TA == "Uncompatible")
         {
@@ -6151,12 +6286,18 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "PM")
     {
+      string reg = to_string(this->Register);
+      
       string OP = this->lexemes.at(this->counter).getWord();
 
       this->counter++;
       string TR = "";
       if (this->MDME(TR))
       {
+        string regR = to_string(this->Register);
+        
+        this->code += "T" + to_string(++this->Register) + " = T" + reg + " " + OP + " T" + regR + "\n";
+
         string TA = sym.compatibilityCheck(Tl, TR, OP);
         if (TA == "Uncompatible")
         {
@@ -6182,11 +6323,17 @@ public:
   {
     if (this->lexemes.at(this->counter).getClassName() == "ROP")
     {
+      string reg = to_string(this->Register);
+      
       string OP = this->lexemes.at(this->counter).getWord();
       this->counter++;
       string TR = "";
       if (this->PME(TR))
       {
+        string regR = to_string(this->Register);
+        
+        this->code += "T" + to_string(++this->Register) + " = T" + reg + " " + OP + " T" + regR + "\n";
+
         string TA = sym.compatibilityCheck(Tl, TR, OP);
         if (TA == "Uncompatible")
         {
@@ -6212,12 +6359,18 @@ public:
   {
     if (this->lexemes.at(this->counter).getClassName() == "&&")
     {
+      string reg = to_string(this->Register);
+      
       string OP = this->lexemes.at(this->counter).getWord();
 
       this->counter++;
       string TR = "";
       if (this->RE(TR))
       {
+        string regR = to_string(this->Register);
+        
+        this->code += "T" + to_string(++this->Register) + " = T" + reg + " " + OP + " T" + regR + "\n";
+
         string TA = sym.compatibilityCheck(Tl, TR, OP);
         if (TA == "Uncompatible")
         {
@@ -6244,12 +6397,18 @@ public:
   {
     if (this->lexemes.at(this->counter).getClassName() == "||")
     {
+      string reg = to_string(this->Register);
+      
       string OP = this->lexemes.at(this->counter).getWord();
 
       this->counter++;
       string TR = "";
       if (this->AE(TR))
       {
+        string regR = to_string(this->Register);
+
+        this->code += "T" + to_string(++this->Register) + " = T" + reg + " " + OP + " T" + regR + "\n";
+        
         string TA = sym.compatibilityCheck(Tl, TR, OP);
         if (TA == "Uncompatible")
         {
@@ -6271,10 +6430,11 @@ public:
     return false;
   }
 
-  bool static_ref_or_null(bool &statCheck, string &T, string &N)
+  bool static_ref_or_null(bool &statCheck, string &T, string &N,string &name)
   {
     if (this->lexemes.at(this->counter).getClassName() == "::")
     {
+      name += "::";
       string TM = "";
       if (sym.lookupDT(N, TM) != "class")
       {
@@ -6286,6 +6446,7 @@ public:
       {
         N = this->lexemes.at(this->counter).getWord();
 
+        name += N;
         statCheck = true;
 
         this->counter++;
@@ -6307,7 +6468,7 @@ public:
     return false;
   }
 
-  bool trail_oe(string N, bool &statCheck, string &T)
+  bool trail_oe(string N, bool &statCheck, string &T,string & name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -6315,6 +6476,7 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
+        name += "." + this->lexemes.at(this->counter).getWord();
         if (T == "")
         {
           T = sym.lookupST(N);
@@ -6359,7 +6521,7 @@ public:
             }
         statCheck = false;
         this->counter++;
-        if (this->function_or_trail(N, statCheck, T))
+        if (this->function_or_trail(N, statCheck, T,name))
           return true;
       }
     }
@@ -6372,18 +6534,23 @@ public:
         if (this->OE(RT))
           if (this->lexemes.at(this->counter).getClassName() == "]")
           {
+            name += "[T" + to_string(this->Register) + "]"; 
+
             if (RT != "int")
             {
               this->semErrors.push_back(" Uncompatible index type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
             this->counter++;
-            if (this->trail_oe_no_arr(N, statCheck, T))
+            if (this->trail_oe_no_arr(N, statCheck, T,name))
               return true;
           }
       }
       else
       {
-        if (temp == "=" || temp == "inc_dec")
+        if (temp == "=" || temp == "inc_dec"){
+          this->Register++;
+           this->code += "T" + to_string(this->Register) + " = "+ name +"\n";
+
           if (T == "")
           {
             T = sym.lookupST(N);
@@ -6426,6 +6593,7 @@ public:
             }        
             if (this->assign_or_inc_dec(T))
           return true;
+          }
       }
     }
     return false;
@@ -6436,6 +6604,9 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "inc_dec")
     {
       string OP = this->lexemes.at(this->counter).getWord();
+      string regR = to_string(this->Register);
+
+      this->code += "T" + to_string(++this->Register) + " = "  + " T" + regR +  OP + "\n";
 
       T = sym.compatibilityCheck(T, OP);
       if (T == "Uncompatible")
@@ -6460,11 +6631,15 @@ public:
     if (this->lexemes.at(this->counter).getClassName() == "=")
     {
       string OP = this->lexemes.at(this->counter).getWord();
-
+      
+      string LT = to_string(this->Register);
+      
       this->counter++;
       string RT = "";
       if (this->OE(RT))
       {
+
+           this->code += "T" + LT + " = "+ "T" + to_string(this->Register) +"\n";
 
         T = sym.compatibilityCheck(T, RT, OP);
         if (T == "Uncompatible")
@@ -6479,25 +6654,25 @@ public:
     return false;
   }
 
-  bool function_or_trail(string N, bool &statCheck, string &T)
+  bool function_or_trail(string N, bool &statCheck, string &T,string &name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
-      if (this->fn_call(T, N, statCheck))
-        if (this->trail_oe_null(N, statCheck, T))
+      if (this->fn_call(T, N, statCheck,name))
+        if (this->trail_oe_null(N, statCheck, T,name))
           return true;
     }
     else
     {
       if (temp == "." || temp == "[" || temp == "inc_dec" || temp == "=")
-        if (this->trail_oe(N, statCheck, T))
+        if (this->trail_oe(N, statCheck, T,name))
           return true;
     }
     return false;
   }
 
-  bool trail_oe_null(string N, bool &statCheck, string &T)
+  bool trail_oe_null(string N, bool &statCheck, string &T,string &name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -6505,6 +6680,7 @@ public:
       this->counter++;
       if (temp == "ID")
       {
+        name += "." + this->lexemes.at(this->counter).getWord();
         if (!from_fun())
         {
           if (T == "")
@@ -6553,7 +6729,7 @@ public:
         statCheck = false;
 
         this->counter++;
-        if (this->function_or_trail(N, statCheck, T))
+        if (this->function_or_trail(N, statCheck, T,name))
           return true;
       }
     }
@@ -6566,12 +6742,14 @@ public:
         if (this->OE(RT))
           if (this->lexemes.at(this->counter).getClassName() == "]")
           {
+            name += "[T" + to_string(this->Register) + "]";
+            
             if (RT != "int")
             {
               this->semErrors.push_back(" Uncompatible index type at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
             this->counter++;
-            if (this->trail_oe_no_arr(N, statCheck, T))
+            if (this->trail_oe_no_arr(N, statCheck, T,name))
               return true;
           }
       }
@@ -6629,7 +6807,7 @@ public:
     return false;
   }
 
-  bool trail_oe_no_arr(string N, bool &statCheck, string &T)
+  bool trail_oe_no_arr(string N, bool &statCheck, string &T,string &name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -6637,6 +6815,7 @@ public:
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
+        name += "." + this->lexemes.at(this->counter).getWord();
         if (T == "")
         {
           T = sym.lookupST(N);
@@ -6682,15 +6861,18 @@ public:
                    statCheck = false;
 
         this->counter++;
-        if (this->function_or_trail(N, statCheck, T))
+        if (this->function_or_trail(N, statCheck, T,name))
           return true;
       }
     }
     else
     {
-      if (temp == "=" || temp == "inc_dec")
+      if (temp == "=" || temp == "inc_dec"){
         if (T == "")
         {
+            this->Register++;
+           this->code += "T" + to_string(this->Register) + " = "+ name +"\n";
+
           T = sym.lookupST(N);
           if (T == "none")
           {
@@ -6733,6 +6915,7 @@ public:
 
       if (this->assign_or_inc_dec(T))
         return true;
+        }
     }
     return false;
   }
@@ -6823,5 +7006,8 @@ private:
   std::vector<string> semErrors;
   Words words;
   int counter;
+  string code;
+  int label;
+  int Register;
   SymbolTable sym;
 };

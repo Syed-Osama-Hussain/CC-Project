@@ -47,10 +47,11 @@ abstract class myclass extends baseClass {
 
 }
 
-static function name( ) {
+static function name(x,y) {
   float a
   int b
-
+  int c = a*b <= b+a
+  
   return a+b
   
 }
