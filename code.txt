@@ -7,6 +7,9 @@ class test {
   public function fn(){
 
   }
+
+  public int k
+
 }
 
 class baseClass {
@@ -19,9 +22,9 @@ class baseClass {
 }
 
 abstract class myclass extends baseClass {
-      
+  
   private var z
-  private test x = new test [5]
+  public test x = new test [5]
 
   private myclass(){
     this->x = y
@@ -61,6 +64,8 @@ int a = true,b = 7
 myclass myobj = new myclass()
 myobj.init(a,b)
 myobj.y = b
+myobj.x.k = 5
+
 
 int #myvar = new int
 
@@ -76,6 +81,7 @@ loop(int b = 1;a<b+3&&a[a+b*g<v&&4].fn()!=2; b++){
 if(i<b(z+a)-9)
 {
   myclass::z.funct()
+
   string arr = new [i+c]
   float mynewvar = a+c
   

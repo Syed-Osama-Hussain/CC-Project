@@ -1017,9 +1017,11 @@ public:
           this->counter++;
           if (this->pl(count))
           {
-            ClassData d(N, to_string(count), AM, TM);
+            this->code += this->sym.getCurrentClass() +  N + "_" + to_string(count) + " proc\n";
+            Data d(N, to_string(count), "", "");
+            ClassData da(N, to_string(count), AM, TM);
 
-            if (!sym.insertClassData(sym.getCurrentClass(), d))
+            if (!sym.insertClassData(sym.getCurrentClass(), da))
             {
               semErrors.push_back("Function Redeclaration at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
             }
@@ -1029,8 +1031,10 @@ public:
 
               this->counter++;
               if (this->term())
-                if (this->body_fn_class())
+                if (this->body_fn_class()){
+                  this->code += N + " Endp\n";
                   return true;
+                  }
             }
           }
         }
@@ -1218,7 +1222,7 @@ public:
           this->counter++;
           string name = "";
           if (this->static_ref_or_null(statCheck, T, N,name))
-            if (this->trail_class(N, statCheck, T))
+            if (this->trail_class(N, statCheck, T,name))
             {
 
               T = sym.compatibilityCheck(T, OP);
@@ -1237,7 +1241,8 @@ public:
       {
         string T = sym.getCurrentClass();
         this->counter++;
-        if (this->trail_this(T))
+        string name = "";
+        if (this->trail_this(name,T))
         {
 
           T = sym.compatibilityCheck(T, OP);
@@ -1340,7 +1345,7 @@ public:
             string name = "";
             this->counter++;
             if (this->static_ref_or_null(statCheck, T, N,name))
-              if (this->trail_class(N, statCheck, T))
+              if (this->trail_class(N, statCheck, T,name))
               {
                 if (T != "int")
                 {
@@ -1356,7 +1361,8 @@ public:
         {
           string T = sym.getCurrentClass();
           this->counter++;
-          if (this->trail_this(T))
+          string name = "";
+          if (this->trail_this(name,T))
           {
             if (T != "int")
             {
@@ -1380,15 +1386,29 @@ public:
       {
         sym.CreateScope();
         this->counter++;
-        if (this->c1_class())
-          if (this->c2_class())
+        if (this->c1_class()){
+          
+          this->code += "L" + to_string(++this->label) + " :\n";
+          
+          if (this->c2_class()){
+            string tempLab = to_string(this->label);
+
+            this->code += "if( T" + to_string(this->Register) + " == false) jmp L" + to_string(++this->label) + " :\n";
+
+            string tempLab2 = to_string(this->label);
             if (this->c3_class())
               if (this->lexemes.at(this->counter).getClassName() == ")")
               {
                 this->counter++;
                 if (this->term())
-                  if (this->body_fn_class())
+                  if (this->body_fn_class()){
+                    
+                    this->code += "jmp L" + tempLab + "\n";
+                    this->code += "L" + tempLab2 + " :\n"; 
                     return true;
+                    }
+              }
+              }
               }
       }
     }
@@ -1906,6 +1926,8 @@ public:
 
         if (this->OE_class(T))
         {
+          this->code += "if( T" + to_string(this->Register) + " == false) jmp L" + to_string(++this->label) + "\n"; 
+
           if (T != "bool" && T != "var")
           {
             this->semErrors.push_back("Condition should be a boolean at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
@@ -1914,11 +1936,12 @@ public:
           if (this->lexemes.at(this->counter).getClassName() == ")")
           {
             sym.CreateScope();
+            string temp = to_string(this->label);
 
             this->counter++;
             if (this->term())
               if (this->body_fn_class())
-                if (this->oelse_class())
+                if (this->oelse_class(temp))
                   return true;
           }
         }
@@ -1927,10 +1950,11 @@ public:
     return false;
   }
 
-  bool oelse_class()
+  bool oelse_class(string temp)
   {
     if (this->lexemes.at(this->counter).getClassName() == "Terminator")
     {
+            this->code += "L" + temp + " :\n"; 
       this->counter++;
       return true;
     }
@@ -1938,11 +1962,15 @@ public:
     {
       if (this->lexemes.at(this->counter).getClassName() == "else")
       {
+                this->code += "jmp L" + to_string(++this->label) + "\n";
+        this->code += "L" + temp + " :\n";
         sym.CreateScope();
         this->counter++;
         if (this->term())
-          if (this->body_fn_class())
+          if (this->body_fn_class()){
+            code += "L" + to_string(this->label) + " :\n";
             return true;
+            }
       }
     }
     return false;
@@ -2105,7 +2133,7 @@ public:
         }
 
         this->counter++;
-        if (this->new_init_class(T))
+        if (this->new_init_class(N,T))
         {
           return true;
         }
@@ -2136,7 +2164,7 @@ public:
           }
         }
         this->counter++;
-        if (this->init_class(T))
+        if (this->init_class(N,T))
         {
           return true;
         }
@@ -2145,14 +2173,14 @@ public:
     return false;
   }
 
-  bool new_init_class(string T)
+  bool new_init_class(string name,string T)
   {
     if (this->lexemes.at(this->counter).getClassName() == "=")
     {
       string OP = this->lexemes.at(this->counter).getWord();
 
       this->counter++;
-      if (this->new_arr_const_class(OP, T))
+      if (this->new_arr_const_class(name,OP, T))
       {
         return true;
       }
@@ -2167,7 +2195,7 @@ public:
     return false;
   }
 
-  bool new_arr_const_class(string OP, string T)
+  bool new_arr_const_class(string name,string OP, string T)
   {
     if (this->lexemes.at(this->counter).getClassName() == "new")
     {
@@ -2179,7 +2207,7 @@ public:
           this->semErrors.push_back("Uncompatible type while declaring variable at line " + to_string(this->lexemes.at(this->counter).getLineNo()));
         }
         this->counter++;
-        if (this->arr_or_null_class())
+        if (this->arr_or_null_class(name))
         {
           return true;
         }
@@ -2193,6 +2221,8 @@ public:
         string RT = "";
         if (this->OE_class(RT))
         {
+          this->code += "# " + name + " = T" + to_string(this->Register) + "\n";
+
           if (sym.compatibilityCheck(T, RT, OP) == "Uncompatible")
           {
             this->semErrors.push_back("Cannot assign type " + RT + " to type " + T + " at " + to_string((this->lexemes.at(this->counter).getLineNo())));
@@ -2204,7 +2234,7 @@ public:
     return false;
   }
 
-  bool arr_or_null_class()
+  bool arr_or_null_class(string name)
   {
     if (this->lexemes.at(this->counter).getClassName() == "[")
     {
@@ -2234,14 +2264,14 @@ public:
     return false;
   }
 
-  bool init_class(string T)
+  bool init_class(string name,string T)
   {
     if (this->lexemes.at(this->counter).getClassName() == "=")
     {
       string OP = this->lexemes.at(this->counter).getWord();
 
       this->counter++;
-      if (this->new_arr_init_class(OP, T))
+      if (this->new_arr_init_class(name,OP, T))
       {
         return true;
       }
@@ -2256,7 +2286,7 @@ public:
     return false;
   }
 
-  bool new_arr_init_class(string OP, string T)
+  bool new_arr_init_class(string name,string OP, string T)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "new")
@@ -2288,6 +2318,8 @@ public:
         string RT = "";
         if (this->OE_class(RT))
         {
+          this->code += name + " = T" + to_string(this->Register) + "\n";
+          
           if (sym.compatibilityCheck(T, RT, OP) == "Uncompatible")
           {
 
@@ -2594,11 +2626,11 @@ public:
           string N = this->lexemes.at(this->counter).getWord();
 
           bool statCheck = false;
-          string name = "";
+          name += N;
           this->counter++;
           if (this->static_ref_or_null(statCheck, T, N,name))
           {
-            if (this->trail_or_fn_class(N, statCheck, T))
+            if (this->trail_or_fn_class(N, statCheck, T,name))
               return true;
           }
         }
@@ -2610,6 +2642,8 @@ public:
       {
         T = this->ConstType(this->lexemes.at(this->counter).getClassName());
 
+        this->code += "T" + to_string(this->Register) + " = "+ this->lexemes.at(this->counter).getWord()+"\n";
+        
         this->counter++;
         return true;
       }
@@ -2638,6 +2672,10 @@ public:
 
             if (this->OPs_class(RT))
             {
+              string regR = to_string(this->Register);
+              
+              this->code += "T" + to_string(++this->Register) + " = " + OP + " T" + regR + "\n";
+              
               T = sym.compatibilityCheck(RT, OP);
 
               if (T == "Uncompatible")
@@ -2657,6 +2695,10 @@ public:
               this->counter++;
               if (this->this_or_ID(T))
               {
+                                    string regR = to_string(this->Register);
+        
+                    this->code += "T" + to_string(++this->Register) + " = " + OP + " T" + regR + "\n";
+
                 T = sym.compatibilityCheck(T, OP);
                 if (T == "Uncompatible")
                 {
@@ -2670,9 +2712,11 @@ public:
             {
               if (temp == "this")
               {
+                string name = "";
+                name  += "this";
                 T = sym.getCurrentClass();
                 this->counter++;
-                if (this->trail_this(T))
+                if (this->trail_this(name,T))
                   return true;
               }
             }
@@ -2688,9 +2732,11 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "this")
     {
+      string name = "";
+      name += "this";
       T = sym.getCurrentClass();
       this->counter++;
-      if (this->trail_this(T))
+      if (this->trail_this(name,T))
         return true;
     }
     else
@@ -2700,10 +2746,11 @@ public:
         string N = this->lexemes.at(this->counter).getWord();
         bool statCheck = false;
         string name = "";
+        name += N;
         this->counter++;
         {
           if (this->static_ref_or_null(statCheck, T, N,name))
-            if (this->trail_class(N, statCheck, T))
+            if (this->trail_class(N, statCheck, T,name))
               return true;
         }
       }
@@ -2711,39 +2758,40 @@ public:
     return false;
   }
 
-  bool trail_this(string &T)
+  bool trail_this(string &name,string &T)
   {
     if (this->lexemes.at(this->counter).getClassName() == "->")
     {
+      name += "->";
       this->counter++;
       if (this->lexemes.at(this->counter).getClassName() == "ID")
       {
         string N = this->lexemes.at(this->counter).getWord();
         bool statCheck = false;
-
+        name += N;
         this->counter++;
-        if (this->fn_call_or_null_class(N, T, statCheck))
-          if (this->trail_class(N, statCheck, T))
+        if (this->fn_call_or_null_class(N, T, statCheck,name))
+          if (this->trail_class(N, statCheck, T,name))
             return true;
       }
     }
     return false;
   }
 
-  bool trail_or_fn_class(string N, bool &statCheck, string &T)
+  bool trail_or_fn_class(string N, bool &statCheck, string &T,string &name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
     {
       if (this->fn_call_class(T, N, statCheck))
-        if (this->trail_class(N, statCheck, T))
+        if (this->trail_class(N, statCheck, T,name))
           return true;
     }
     else
     {
       if (temp == "[" || temp == "." || temp == "MDM" || temp == "PM" || temp == "ROP" || temp == "&&" || temp == "||" || temp == ")" || temp == "]" || temp == "Terminator" || temp == ";" || temp == ",")
       {
-        if (this->trail_class(N, statCheck, T))
+        if (this->trail_class(N, statCheck, T,name))
           if (this->inc_dec_or_null(T))
             return true;
       }
@@ -2805,7 +2853,7 @@ public:
     return false;
   }
 
-  bool trail_class(string N, bool &statCheck, string &T)
+  bool trail_class(string N, bool &statCheck, string &T,string &name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == ".")
@@ -2876,9 +2924,9 @@ public:
         }
         this->counter++;
         statCheck = false;
-
-        if (this->fn_call_or_null_class(N, T, statCheck))
-          if (this->trail_class(N, statCheck, T))
+        string name = "";
+        if (this->fn_call_or_null_class(N, T, statCheck,name))
+          if (this->trail_class(N, statCheck, T,name))
             return true;
       }
     }
@@ -3041,8 +3089,9 @@ public:
         }
         statCheck = false;
         this->counter++;
-        if (this->fn_call_or_null_class(N, T, statCheck))
-          if (this->trail_class(N, statCheck, T))
+        string name = "";
+        if (this->fn_call_or_null_class(N, T, statCheck,name))
+          if (this->trail_class(N, statCheck, T,name))
             return true;
       }
     }
@@ -3114,7 +3163,7 @@ public:
     return false;
   }
 
-  bool fn_call_or_null_class(string N, string &T, bool &statCheck)
+  bool fn_call_or_null_class(string N, string &T, bool &statCheck,string &name)
   {
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "(")
@@ -3277,12 +3326,17 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "MDM")
     {
+            string reg = to_string(this->Register);
       string OP = this->lexemes.at(this->counter).getWord();
       string TR = "";
 
       this->counter++;
       if (this->OPs_class(TR))
       {
+        string regR = to_string(this->Register);
+        
+        this->code += "T" + to_string(++this->Register) + " = T" + reg + " " + OP + " T" + regR + "\n";
+
         string TA = sym.compatibilityCheck(Tl, TR, OP);
         if (TA == "Uncompatible")
         {
@@ -3308,12 +3362,17 @@ public:
     string temp = this->lexemes.at(this->counter).getClassName();
     if (temp == "PM")
     {
+            string reg = to_string(this->Register);
       string OP = this->lexemes.at(this->counter).getWord();
 
       string TR = "";
       this->counter++;
       if (this->MDME_class(TR))
       {
+        string regR = to_string(this->Register);
+        
+        this->code += "T" + to_string(++this->Register) + " = T" + reg + " " + OP + " T" + regR + "\n";
+
         string TA = sym.compatibilityCheck(Tl, TR, OP);
 
         if (TA == "Uncompatible")
@@ -3340,12 +3399,18 @@ public:
   {
     if (this->lexemes.at(this->counter).getClassName() == "ROP")
     {
+      string reg = to_string(this->Register);
+
       string OP = this->lexemes.at(this->counter).getWord();
 
       string TR = "";
       this->counter++;
       if (this->PME_class(TR))
       {
+        string regR = to_string(this->Register);
+        
+        this->code += "T" + to_string(++this->Register) + " = T" + reg + " " + OP + " T" + regR + "\n";
+
         string TA = sym.compatibilityCheck(Tl, TR, OP);
         if (TA == "Uncompatible")
         {
@@ -3371,12 +3436,18 @@ public:
   {
     if (this->lexemes.at(this->counter).getClassName() == "&&")
     {
+      string reg = to_string(this->Register);
+
       string OP = this->lexemes.at(this->counter).getWord();
       string TR = "";
 
       this->counter++;
       if (this->RE_class(TR))
       {
+        string regR = to_string(this->Register);
+        
+        this->code += "T" + to_string(++this->Register) + " = T" + reg + " " + OP + " T" + regR + "\n";
+
         string TA = sym.compatibilityCheck(Tl, TR, OP);
 
         if (TA == "Uncompatible")
@@ -3403,12 +3474,18 @@ public:
   {
     if (this->lexemes.at(this->counter).getClassName() == "||")
     {
+            string reg = to_string(this->Register);
+
       string OP = this->lexemes.at(this->counter).getWord();
 
       this->counter++;
       string TR = "";
       if (this->AE_class(TR))
       {
+                string regR = to_string(this->Register);
+
+        this->code += "T" + to_string(++this->Register) + " = T" + reg + " " + OP + " T" + regR + "\n";
+
         string TA = sym.compatibilityCheck(Tl, TR, OP);
 
         if (TA == "Uncompatible")

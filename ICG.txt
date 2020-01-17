@@ -1,75 +1,100 @@
-name_2 proc
-T1 = a
-T2 = b
-T3 = T1 * T2
-T4 = b
-T5 = a
-T6 = T4 + T5
-T7 = T3 <= T6
-c = T7
-T8 = a
-T9 = b
-T10 = T8 + T9
-return T10
-name Endp
-T11 = true
-a = T11
-T12 = 7
-b = T12
-myobj = Call myclass_myclass,0
-T13 = a
-T14 = b
-Param T14
-Param T13
-T15 = Call myobj.init,2
-T16 = myobj.y
-T17 = b
-T16 = T17
-T18 = 1
-b = T18
+testfunct_0 proc
+T0 = 5
+funct Endp
+testfn_0 proc
+fn Endp
+baseClassfn_0 proc
+fn Endp
+T0 = 5
+myclassinit_2 proc
+T0 = 1
+b = T0
 L1 :
-T19 = a
-T20 = b
-T21 = 3
-T22 = T20 + T21
-T23 = T19 < T22
-T24 = a
-T25 = b
-T26 = g
-T27 = T25 * T26
-T28 = T24 + T27
-T29 = v
-T30 = T28 < T29
-T31 = 4
-T32 = T30 && T31
-T33 = Call a[T32].fn,0
-T34 = T33
-T35 = 2
-T36 = T34 != T35
-T37 = T23 && T36
-if( T37 == false) jmp L2 :
-T38 = b
-T39 =  T38++
-T40 = Call fn,0
+T0 = 3
+T0 = 2
+T1 = T0 != T0
+if( T1 == false) jmp L2 :
+T2 = T1 <= T1
+if( T2 == false) jmp L3
+L3 :
 jmp L1
 L2 :
-T41 = i
-T42 = z
-T43 = a
-T44 = T42 + T43
-Param T44
-T45 = Call b,1
-T46 = T45
-T47 = 9
-T48 = T46 - T47
-T49 = T41 < T48
-if( T49 == false) jmp L3
-T50 = Call myclass::z.funct,0
-T51 = i
-T52 = c
-T53 = T51 + T52
-T54 = a
-T55 = c
-T56 = T54 + T55
-mynewvar = T56
-L3 :
+init Endp
+name_2 proc
+T3 = a
+T4 = b
+T5 = T3 * T4
+T6 = b
+T7 = a
+T8 = T6 + T7
+T9 = T5 <= T8
+c = T9
+T10 = a
+T11 = b
+T12 = T10 + T11
+return T12
+name Endp
+T13 = true
+a = T13
+T14 = 7
+b = T14
+myobj = Call myclass_myclass,0
+T15 = a
+T16 = b
+Param T16
+Param T15
+T17 = Call myobj.init,2
+T18 = myobj.y
+T19 = b
+T18 = T19
+T20 = myobj.x.k
+T21 = 5
+T20 = T21
+T22 = 1
+b = T22
+L4 :
+T23 = a
+T24 = b
+T25 = 3
+T26 = T24 + T25
+T27 = T23 < T26
+T28 = a
+T29 = b
+T30 = g
+T31 = T29 * T30
+T32 = T28 + T31
+T33 = v
+T34 = T32 < T33
+T35 = 4
+T36 = T34 && T35
+T37 = Call a[T36].fn,0
+T38 = T37
+T39 = 2
+T40 = T38 != T39
+T41 = T27 && T40
+if( T41 == false) jmp L5 :
+T42 = b
+T43 =  T42++
+T44 = Call fn,0
+jmp L4
+L5 :
+T45 = i
+T46 = z
+T47 = a
+T48 = T46 + T47
+Param T48
+T49 = Call b,1
+T50 = T49
+T51 = 9
+T52 = T50 - T51
+T53 = T45 < T52
+if( T53 == false) jmp L6
+T54 = Call myclass::z.funct,0
+T55 = i
+T56 = c
+T57 = T55 + T56
+T58 = a
+T59 = c
+T60 = T58 + T59
+mynewvar = T60
+L6 :
